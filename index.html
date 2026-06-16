@@ -1241,6 +1241,243 @@
     .app-left, .app-right { padding: 60px 24px; }
     .stats-inner { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ═══════════════════════════════════════════
+     IMAGE SLIDER
+  ═══════════════════════════════════════════ */
+  .slider-section {
+    position: relative;
+    width: 100%;
+    height: 620px;
+    overflow: hidden;
+    background: var(--dark);
+  }
+
+  .slider-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.85s cubic-bezier(.77,0,.18,1);
+    will-change: transform;
+  }
+
+  .slide {
+    position: relative;
+    min-width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.04);
+    transition: transform 6s ease;
+  }
+  .slide.active img { transform: scale(1); }
+
+  .slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(8,8,8,0.82) 0%,
+      rgba(8,8,8,0.42) 50%,
+      rgba(8,8,8,0.18) 100%
+    );
+  }
+
+  /* Caption */
+  .slide-caption {
+    position: absolute;
+    top: 50%;
+    left: 72px;
+    transform: translateY(-50%);
+    z-index: 2;
+    max-width: 520px;
+  }
+
+  .slide-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--dark);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    margin-bottom: 18px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.55s 0.2s ease, transform 0.55s 0.2s ease;
+  }
+  .slide.active .slide-badge { opacity: 1; transform: translateX(0); }
+
+  .slide-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 14px;
+    opacity: 0;
+    transform: translateX(-24px);
+    transition: opacity 0.6s 0.35s ease, transform 0.6s 0.35s ease;
+  }
+  .slide.active .slide-title { opacity: 1; transform: translateX(0); }
+
+  .slide-desc {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--text-sub);
+    margin-bottom: 28px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.6s 0.5s ease, transform 0.6s 0.5s ease;
+  }
+  .slide.active .slide-desc { opacity: 1; transform: translateX(0); }
+
+  .slide-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    background: var(--gold);
+    color: var(--dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: var(--radius);
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.6s 0.65s ease, transform 0.6s 0.65s ease, background 0.25s;
+  }
+  .slide.active .slide-cta { opacity: 1; transform: translateX(0); }
+  .slide-cta:hover { background: var(--gold-light); }
+  .slide-cta svg { width: 13px; height: 13px; stroke: var(--dark); fill: none; }
+
+  /* Slide counter */
+  .slider-counter {
+    position: absolute;
+    top: 40px;
+    right: 72px;
+    z-index: 10;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: rgba(240,237,232,0.45);
+    letter-spacing: 2px;
+  }
+  .slider-counter .current { color: var(--gold); font-size: 22px; }
+
+  /* Arrows */
+  .slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 52px; height: 52px;
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(201,168,76,0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), transform 0.2s;
+  }
+  .slider-arrow:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    transform: translateY(-50%) scale(1.08);
+  }
+  .slider-arrow:hover svg { stroke: var(--dark); }
+  .slider-arrow svg { width: 20px; height: 20px; stroke: var(--text); fill: none; transition: stroke 0.2s; }
+  .slider-prev { left: 28px; }
+  .slider-next { right: 28px; }
+
+  /* Dots */
+  .slider-dots {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .slider-dot {
+    width: 28px; height: 2px;
+    background: rgba(240,237,232,0.25);
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition), width var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .slider-dot.active {
+    width: 48px;
+    background: rgba(201,168,76,0.4);
+  }
+  .slider-dot.active::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: var(--gold);
+    animation: dotProgress 5s linear forwards;
+  }
+  @keyframes dotProgress { from { width: 0; } to { width: 100%; } }
+
+  /* Progress bar */
+  .slider-progress {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--gold);
+    width: 0;
+    z-index: 10;
+    animation: sliderProgress 5s linear infinite;
+  }
+  @keyframes sliderProgress { from { width: 0; } to { width: 100%; } }
+
+  /* Thumbnail strip */
+  .slider-thumbs {
+    position: absolute;
+    bottom: 60px;
+    right: 28px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .slider-thumb {
+    width: 64px; height: 44px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity var(--transition), border-color var(--transition);
+    filter: grayscale(0.4);
+  }
+  .slider-thumb.active {
+    border-color: var(--gold);
+    opacity: 1;
+    filter: none;
+  }
+
+  @media (max-width: 768px) {
+    .slider-section { height: 480px; }
+    .slide-caption { left: 24px; right: 24px; max-width: none; }
+    .slider-counter { right: 24px; top: 24px; }
+    .slider-thumbs { display: none; }
+    .slider-arrow { width: 40px; height: 40px; }
+    .slider-prev { left: 12px; }
+    .slider-next { right: 12px; }
+  }
   </style>
 </head>
 <body>
@@ -1453,6 +1690,127 @@
       </button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════ IMAGE SLIDER ═══════════════ -->
+<div class="slider-section" id="slider"
+     onmouseenter="sliderPause()" onmouseleave="sliderResume()">
+
+  <!-- Track -->
+  <div class="slider-track" id="sliderTrack">
+
+    <!-- Slide 1 — Property -->
+    <div class="slide active">
+      <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1600&q=85" alt="Luxury Villa Dubai" loading="eager" />
+      <div class="slide-overlay"></div>
+      <div class="slide-caption">
+        <span class="slide-badge">Properties</span>
+        <h2 class="slide-title">Skyline Villa<br/>Dubai Hills Estate</h2>
+        <p class="slide-desc">5 Beds · 850 m² · Panoramic skyline views.<br/>Starting from AED 15,400,000.</p>
+        <a href="#" class="slide-cta">
+          View Property
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 2 — Travel -->
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=1600&q=85" alt="Maldives Overwater Bungalow" loading="lazy" />
+      <div class="slide-overlay"></div>
+      <div class="slide-caption">
+        <span class="slide-badge">Travel</span>
+        <h2 class="slide-title">Maldives<br/>Overwater Retreat</h2>
+        <p class="slide-desc">7-night luxury package · Private butler · All-inclusive.<br/>From $1,200 per night.</p>
+        <a href="#" class="slide-cta">
+          Explore Package
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 3 — Cars -->
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1600&q=85" alt="Luxury Sports Car" loading="lazy" />
+      <div class="slide-overlay"></div>
+      <div class="slide-caption">
+        <span class="slide-badge">Cars</span>
+        <h2 class="slide-title">Drive Your<br/>Dream Car Today</h2>
+        <p class="slide-desc">Curated selection of the world's finest automobiles.<br/>BMW · Rolls-Royce · Ferrari · Bentley.</p>
+        <a href="#" class="slide-cta">
+          Browse Cars
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 4 — Property 2 -->
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=85" alt="Modern Penthouse" loading="lazy" />
+      <div class="slide-overlay"></div>
+      <div class="slide-caption">
+        <span class="slide-badge">New Listing</span>
+        <h2 class="slide-title">Palm Jumeirah<br/>Penthouse</h2>
+        <p class="slide-desc">4 Beds · 360° sea views · Private rooftop pool.<br/>$6,800,000 — Exclusive to TABLO.</p>
+        <a href="#" class="slide-cta">
+          See Details
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Slide 5 — Travel 2 -->
+    <div class="slide">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85" alt="Santorini Greece" loading="lazy" />
+      <div class="slide-overlay"></div>
+      <div class="slide-caption">
+        <span class="slide-badge">Featured Escape</span>
+        <h2 class="slide-title">Santorini<br/>Private Retreat</h2>
+        <p class="slide-desc">Cliffside villa · Infinity pool · Sunset caldera views.<br/>Book your Mediterranean escape today.</p>
+        <a href="#" class="slide-cta">
+          Discover More
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /slider-track -->
+
+  <!-- Counter -->
+  <div class="slider-counter">
+    <span class="current" id="sliderCurrent">01</span>
+    <span> / 05</span>
+  </div>
+
+  <!-- Arrows -->
+  <button class="slider-arrow slider-prev" onclick="slideMove(-1)" aria-label="Previous">
+    <svg viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+  </button>
+  <button class="slider-arrow slider-next" onclick="slideMove(1)" aria-label="Next">
+    <svg viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+  </button>
+
+  <!-- Dots -->
+  <div class="slider-dots" id="sliderDots">
+    <button class="slider-dot active" onclick="slideTo(0)" aria-label="Slide 1"></button>
+    <button class="slider-dot" onclick="slideTo(1)" aria-label="Slide 2"></button>
+    <button class="slider-dot" onclick="slideTo(2)" aria-label="Slide 3"></button>
+    <button class="slider-dot" onclick="slideTo(3)" aria-label="Slide 4"></button>
+    <button class="slider-dot" onclick="slideTo(4)" aria-label="Slide 5"></button>
+  </div>
+
+  <!-- Thumbnail strip -->
+  <div class="slider-thumbs">
+    <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=120&q=70" class="slider-thumb active" onclick="slideTo(0)" alt="" loading="eager" />
+    <img src="https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=120&q=70" class="slider-thumb" onclick="slideTo(1)" alt="" loading="lazy" />
+    <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=120&q=70" class="slider-thumb" onclick="slideTo(2)" alt="" loading="lazy" />
+    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=120&q=70" class="slider-thumb" onclick="slideTo(3)" alt="" loading="lazy" />
+    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=120&q=70" class="slider-thumb" onclick="slideTo(4)" alt="" loading="lazy" />
+  </div>
+
+  <!-- Progress bar -->
+  <div class="slider-progress" id="sliderProgress"></div>
+
 </div>
 
 <!-- ═══════════════ FEATURE CARDS ═══════════════ -->
@@ -1993,6 +2351,72 @@
     btn.style.background = '#2d6a4f';
     setTimeout(() => { btn.textContent = 'Subscribe'; btn.style.background = ''; }, 3000);
   });
+
+  /* ── Image Slider ── */
+  (function () {
+    const track      = document.getElementById('sliderTrack');
+    const slides     = Array.from(track.querySelectorAll('.slide'));
+    const dots       = Array.from(document.querySelectorAll('.slider-dot'));
+    const thumbs     = Array.from(document.querySelectorAll('.slider-thumb'));
+    const counter    = document.getElementById('sliderCurrent');
+    const progressEl = document.getElementById('sliderProgress');
+
+    const TOTAL    = slides.length;
+    const INTERVAL = 5000;
+    let current  = 0;
+    let timer    = null;
+    let paused   = false;
+
+    function goTo(idx) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      thumbs[current].classList.remove('active');
+
+      current = (idx + TOTAL) % TOTAL;
+
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+      thumbs[current].classList.add('active');
+
+      track.style.transform = `translateX(-${current * 100}%)`;
+      counter.textContent = String(current + 1).padStart(2, '0');
+
+      /* restart progress bar */
+      progressEl.style.animation = 'none';
+      progressEl.offsetHeight;
+      progressEl.style.animation = `sliderProgress ${INTERVAL}ms linear forwards`;
+    }
+
+    function next() { goTo(current + 1); }
+
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => { if (!paused) next(); }, INTERVAL);
+    }
+
+    window.slideMove = (dir) => { goTo(current + dir); startTimer(); };
+    window.slideTo  = (idx)  => { goTo(idx);           startTimer(); };
+    window.sliderPause  = () => { paused = true; };
+    window.sliderResume = () => { paused = false; };
+
+    /* Touch / swipe support */
+    let touchStartX = 0;
+    const sliderEl = document.getElementById('slider');
+    sliderEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+    sliderEl.addEventListener('touchend',   (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) { slideMove(dx < 0 ? 1 : -1); }
+    }, { passive: true });
+
+    /* Keyboard */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft')  slideMove(-1);
+      if (e.key === 'ArrowRight') slideMove(1);
+    });
+
+    startTimer();
+    progressEl.style.animation = `sliderProgress ${INTERVAL}ms linear forwards`;
+  })();
 </script>
 </body>
 </html>
