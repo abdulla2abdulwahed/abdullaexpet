@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TABLO – Properties · Travel · Cars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e2c97e;
+      --dark: #0a0a0a;
+      --dark-2: #111111;
+      --dark-3: #1a1a1a;
+      --dark-4: #222222;
+      --text: #f0ede8;
+      --text-muted: #9a9080;
+      --border: rgba(201,168,76,0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .nav-logo .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: var(--text);
+    }
+
+    .nav-logo .tagline {
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--gold); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-actions svg {
+      width: 20px; height: 20px;
+      stroke: var(--text-muted);
+      fill: none;
+      cursor: pointer;
+      transition: stroke 0.2s;
+    }
+
+    .nav-actions svg:hover { stroke: var(--gold); }
+
+    .btn-signin {
+      padding: 8px 20px;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-signin:hover {
+      background: var(--gold);
+      color: var(--dark);
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .hero-bg-panel {
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.35);
+    }
+
+    .hero-bg-panel:nth-child(1) {
+      background-image: url('https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80');
+    }
+
+    .hero-bg-panel:nth-child(2) {
+      background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80');
+      filter: brightness(0.25);
+    }
+
+    .hero-bg-panel:nth-child(3) {
+      background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80');
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.6) 60%, rgba(10,10,10,0.95) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+      padding: 0 20px;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(56px, 10vw, 110px);
+      font-weight: 700;
+      letter-spacing: 20px;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .hero-sub {
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ─── SEARCH BOX ─── */
+    .search-box {
+      background: rgba(15,15,15,0.92);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      max-width: 720px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .search-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .search-tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .search-tab svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    .search-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+
+    .search-tab:hover:not(.active) { color: var(--text); }
+
+    .search-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0;
+      padding: 16px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .search-field label {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .search-field input,
+    .search-field select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .search-field input::placeholder { color: var(--text-muted); font-size: 12px; }
+    .search-field input:focus,
+    .search-field select:focus { border-color: var(--gold); }
+
+    .search-field select option { background: var(--dark-2); }
+
+    .btn-search {
+      background: var(--gold);
+      border: none;
+      color: var(--dark);
+      padding: 10px 24px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: background 0.2s;
+      align-self: end;
+    }
+
+    .btn-search:hover { background: var(--gold-light); }
+
+    .btn-search svg {
+      width: 14px; height: 14px;
+      stroke: var(--dark);
+      fill: none;
+    }
+
+    /* ─── SECTION ─── */
+    section { padding: 80px 60px; }
+
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    /* ─── FEATURE CARDS ─── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+    }
+
+    .feature-card {
+      position: relative;
+      height: 420px;
+      overflow: hidden;
+      background: var(--dark-2);
+    }
+
+    .feature-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.4);
+      transition: filter 0.4s, transform 0.6s;
+    }
+
+    .feature-card:hover img {
+      filter: brightness(0.25);
+      transform: scale(1.05);
+    }
+
+    .feature-card-content {
+      position: absolute;
+      inset: 0;
+      padding: 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border: 1px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon svg {
+      width: 20px; height: 20px;
+      stroke: var(--gold);
+      fill: none;
+    }
+
+    .feature-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(240,237,232,0.7);
+      margin-bottom: 20px;
+    }
+
+    .btn-explore {
+      display: inline-block;
+      padding: 10px 22px;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.2s, color 0.2s;
+      width: fit-content;
+    }
+
+    .btn-explore:hover {
+      background: var(--gold);
+      color: var(--dark);
+    }
+
+    /* ─── TRUST SECTION ─── */
+    .trust-section {
+      background: var(--dark-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 60px;
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 20px;
+    }
+
+    .trust-item {
+      text-align: center;
+    }
+
+    .trust-item svg {
+      width: 28px; height: 28px;
+      stroke: var(--gold);
+      fill: none;
+      margin-bottom: 12px;
+    }
+
+    .trust-item h4 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .trust-item p {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    /* ─── APP SECTION ─── */
+    .app-section {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      background: var(--dark-3);
+    }
+
+    .app-stats {
+      padding: 80px 60px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 50px;
+    }
+
+    .stat-item h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .stat-item p {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .app-promo {
+      background: var(--dark-4);
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 1px solid var(--border);
+    }
+
+    .app-promo h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: 2px;
+    }
+
+    .app-promo p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .app-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-store {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: border-color 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-store:hover { border-color: var(--gold); }
+
+    .btn-store svg {
+      width: 20px; height: 20px;
+      fill: var(--text);
+    }
+
+    .btn-store-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .btn-store-text span:first-child {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .btn-store-text span:last-child {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ─── PARTNERS ─── */
+    .partners {
+      padding: 50px 60px;
+      border-top: 1px solid var(--border);
+    }
+
+    .partners-label {
+      font-size: 9px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .partners-grid {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .partner-logo {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(240,237,232,0.35);
+      transition: color 0.2s;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .partner-logo:hover { color: var(--gold); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--dark);
+      border-top: 1px solid var(--border);
+      padding: 60px 60px 30px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 50px;
+      margin-bottom: 50px;
+    }
+
+    .footer-brand .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      letter-spacing: 6px;
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .footer-brand .tagline {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .footer-brand p {
+      margin-top: 16px;
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-muted);
+    }
+
+    .footer-col h4 {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-col ul a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul a:hover { color: var(--gold); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-bottom p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .social-links a {
+      width: 32px; height: 32px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s;
+      text-decoration: none;
+    }
+
+    .social-links a:hover { border-color: var(--gold); }
+
+    .social-links svg {
+      width: 14px; height: 14px;
+      stroke: var(--text-muted);
+      fill: none;
+    }
+
+    /* ─── LISTINGS PREVIEW ─── */
+    .listings {
+      padding: 80px 60px;
+      background: var(--dark);
+    }
+
+    .listings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 40px;
+    }
+
+    .listings-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .listings-header a {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .listing-card {
+      background: var(--dark-2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .listing-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+
+    .listing-img {
+      position: relative;
+      height: 220px;
+      overflow: hidden;
+    }
+
+    .listing-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .listing-card:hover .listing-img img { transform: scale(1.05); }
+
+    .listing-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--gold);
+      color: var(--dark);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+    }
+
+    .listing-info {
+      padding: 20px;
+    }
+
+    .listing-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .listing-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .listing-loc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .listing-loc svg {
+      width: 12px; height: 12px;
+      stroke: var(--gold);
+      fill: none;
+    }
+
+    .listing-meta {
+      display: flex;
+      gap: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .listing-meta span {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .listing-meta svg {
+      width: 13px; height: 13px;
+      stroke: var(--gold);
+      fill: none;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      section { padding: 60px 24px; }
+      .features { grid-template-columns: 1fr; }
+      .trust-grid { grid-template-columns: repeat(2, 1fr); }
+      .app-section { grid-template-columns: 1fr; }
+      .app-promo { border-left: none; border-top: 1px solid var(--border); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .listings-grid { grid-template-columns: 1fr; }
+      .listings { padding: 60px 24px; }
+      .trust-section { padding: 50px 24px; }
+      .partners { padding: 40px 24px; }
+      footer { padding: 50px 24px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAVIGATION ─── -->
+<nav>
+  <div class="nav-logo">
+    <span class="brand">TABLO</span>
+    <span class="tagline">Properties · Travel · Cars</span>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="#properties">Properties</a></li>
+    <li><a href="#travel">Travel</a></li>
+    <li><a href="#cars">Cars</a></li>
+    <li><a href="#about">About Us</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <!-- Heart -->
+    <svg viewBox="0 0 24 24" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
+    </svg>
+    <!-- User -->
+    <svg viewBox="0 0 24 24" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+    </svg>
+    <button class="btn-signin">Sign In</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" style="padding:0;">
+  <div class="hero-bg">
+    <div class="hero-bg-panel"></div>
+    <div class="hero-bg-panel"></div>
+    <div class="hero-bg-panel"></div>
+  </div>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">TABLO</h1>
+    <p class="hero-sub">One Destination. Endless Possibilities.</p>
+
+    <div class="search-box">
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="switchTab(this,'properties')">
+          <svg viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+          </svg>
+          Properties
+        </button>
+        <button class="search-tab" onclick="switchTab(this,'travel')">
+          <svg viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+          </svg>
+          Travel
+        </button>
+        <button class="search-tab" onclick="switchTab(this,'cars')">
+          <svg viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+          </svg>
+          Cars
+        </button>
+      </div>
+
+      <div class="search-fields" id="search-properties">
+        <div class="search-field">
+          <label>Location</label>
+          <input type="text" placeholder="Enter location" />
+        </div>
+        <div class="search-field">
+          <label>Type</label>
+          <select>
+            <option>All Types</option>
+            <option>Villa</option>
+            <option>Apartment</option>
+            <option>Penthouse</option>
+            <option>Townhouse</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>Price Range</label>
+          <select>
+            <option>Any Price</option>
+            <option>Under $500K</option>
+            <option>$500K – $1M</option>
+            <option>$1M – $5M</option>
+            <option>$5M+</option>
+          </select>
+        </div>
+        <button class="btn-search">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+          </svg>
+          Search
+        </button>
+      </div>
+
+      <div class="search-fields" id="search-travel" style="display:none">
+        <div class="search-field">
+          <label>Destination</label>
+          <input type="text" placeholder="Where to?" />
+        </div>
+        <div class="search-field">
+          <label>Travel Type</label>
+          <select>
+            <option>All Types</option>
+            <option>Flight + Hotel</option>
+            <option>Hotel Only</option>
+            <option>Packages</option>
+            <option>Experiences</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>Budget</label>
+          <select>
+            <option>Any Budget</option>
+            <option>Economy</option>
+            <option>Business</option>
+            <option>Luxury</option>
+          </select>
+        </div>
+        <button class="btn-search">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+          </svg>
+          Search
+        </button>
+      </div>
+
+      <div class="search-fields" id="search-cars" style="display:none">
+        <div class="search-field">
+          <label>Make</label>
+          <select>
+            <option>All Makes</option>
+            <option>BMW</option>
+            <option>Mercedes-Benz</option>
+            <option>Rolls-Royce</option>
+            <option>Bentley</option>
+            <option>Ferrari</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>Type</label>
+          <select>
+            <option>All Types</option>
+            <option>Sedan</option>
+            <option>SUV</option>
+            <option>Coupe</option>
+            <option>Convertible</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>Price Range</label>
+          <select>
+            <option>Any Price</option>
+            <option>Under $100K</option>
+            <option>$100K – $300K</option>
+            <option>$300K+</option>
+          </select>
+        </div>
+        <button class="btn-search">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+          </svg>
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURE CARDS ─── -->
+<div class="features" id="properties">
+  <!-- Properties -->
+  <div class="feature-card">
+    <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=900&q=80" alt="Luxury Property" />
+    <div class="feature-card-content">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+        </svg>
+      </div>
+      <h3>PROPERTIES</h3>
+      <p>Find your perfect place to live, invest or grow.</p>
+      <a href="#" class="btn-explore">Explore Properties</a>
+    </div>
+  </div>
+
+  <!-- Travel -->
+  <div class="feature-card" id="travel">
+    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80" alt="Luxury Travel" />
+    <div class="feature-card-content">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+        </svg>
+      </div>
+      <h3>TRAVEL</h3>
+      <p>Explore the world with exclusive deals and unforgettable experiences.</p>
+      <a href="#" class="btn-explore">Explore Travel</a>
+    </div>
+  </div>
+
+  <!-- Cars -->
+  <div class="feature-card" id="cars">
+    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900&q=80" alt="Luxury Cars" />
+    <div class="feature-card-content">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+        </svg>
+      </div>
+      <h3>CARS</h3>
+      <p>Find, compare and drive your dream car today.</p>
+      <a href="#" class="btn-explore">Explore Cars</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FEATURED LISTINGS ─── -->
+<div class="listings">
+  <div class="listings-header">
+    <div>
+      <p class="section-title" style="text-align:left;margin-bottom:8px;">Featured</p>
+      <h2>Premium Listings</h2>
+    </div>
+    <a href="#">View All →</a>
+  </div>
+
+  <div class="listings-grid">
+    <div class="listing-card">
+      <div class="listing-img">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Villa" />
+        <span class="listing-badge">For Sale</span>
+      </div>
+      <div class="listing-info">
+        <div class="listing-price">$4,200,000</div>
+        <div class="listing-name">Skyline Villa</div>
+        <div class="listing-loc">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+          Dubai Hills Estate
+        </div>
+        <div class="listing-meta">
+          <span>
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z"/></svg>
+            5 Beds
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>
+            6 Baths
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+            850 m²
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="listing-card">
+      <div class="listing-img">
+        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80" alt="Overwater Bungalow" />
+        <span class="listing-badge">Featured</span>
+      </div>
+      <div class="listing-info">
+        <div class="listing-price">From $1,200 / night</div>
+        <div class="listing-name">Maldives Overwater Suite</div>
+        <div class="listing-loc">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+          North Malé Atoll
+        </div>
+        <div class="listing-meta">
+          <span>
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
+            Travel Package
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/></svg>
+            4.9 Rating
+          </span>
+          <span>All Inclusive</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="listing-card">
+      <div class="listing-img">
+        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80" alt="Luxury Car" />
+        <span class="listing-badge">Available</span>
+      </div>
+      <div class="listing-info">
+        <div class="listing-price">$285,000</div>
+        <div class="listing-name">BMW M8 Gran Coupé</div>
+        <div class="listing-loc">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+          Dubai Showroom
+        </div>
+        <div class="listing-meta">
+          <span>2024 Model</span>
+          <span>625 HP</span>
+          <span>3.2s 0–100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TRUST SECTION ─── -->
+<div class="trust-section">
+  <div class="trust-grid">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
+      </svg>
+      <h4>Trusted Platform</h4>
+      <p>Verified listings and trusted partners you can rely on.</p>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+      </svg>
+      <h4>24/7 Support</h4>
+      <p>Our team is always here to assist you anytime.</p>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z"/>
+      </svg>
+      <h4>Best Prices</h4>
+      <p>Competitive prices and exclusive offers always.</p>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+      </svg>
+      <h4>Secure Booking</h4>
+      <p>Your data and transactions are 100% secure.</p>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418"/>
+      </svg>
+      <h4>Global Reach</h4>
+      <p>Connecting you to the best across the globe.</p>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/>
+      </svg>
+      <h4>Premium Experience</h4>
+      <p>Exceptional quality and service in everything we do.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── APP SECTION ─── -->
+<div class="app-section">
+  <div class="app-stats">
+    <p class="section-title" style="text-align:left;margin-bottom:32px;">By the numbers</p>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h3>12K+</h3>
+        <p>Properties</p>
+      </div>
+      <div class="stat-item">
+        <h3>85+</h3>
+        <p>Destinations</p>
+      </div>
+      <div class="stat-item">
+        <h3>3.5K+</h3>
+        <p>Vehicles</p>
+      </div>
+      <div class="stat-item">
+        <h3>98%</h3>
+        <p>Satisfaction</p>
+      </div>
+      <div class="stat-item">
+        <h3>50K+</h3>
+        <p>Happy Clients</p>
+      </div>
+      <div class="stat-item">
+        <h3>15+</h3>
+        <p>Years Expertise</p>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);line-height:1.8;max-width:480px;">
+      TABLO brings together the world's finest properties, travel experiences, and luxury vehicles under one roof — curated for those who expect the very best.
+    </p>
+  </div>
+
+  <div class="app-promo">
+    <p class="section-title" style="text-align:left;margin-bottom:12px;">Mobile App</p>
+    <h3>THE TABLO APP</h3>
+    <p>Everything you need in one place. Browse, book, and manage on the go.</p>
+    <div class="app-buttons">
+      <a href="#" class="btn-store">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+        <div class="btn-store-text">
+          <span>Download on the</span>
+          <span>App Store</span>
+        </div>
+      </a>
+      <a href="#" class="btn-store">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.18 23.76c.3.17.64.24.99.2l12.5-12.5L13.34 8.1 3.18 23.76zM20.65 10.27l-2.62-1.53-3.28 3.28 3.28 3.28 2.63-1.54c.75-.44.75-1.55-.01-1.99zM2.01 1.21C1.97 1.34 2 1.47 2 1.6v20.8c0 .13-.03.26.01.39l11.33-11.33L2.01 1.21zM16.67 2.24L4.17 2.04l9.17 9.16 3.33-3.33-2.62-1.63c.67-.4.67-1.4.62-1.37z" fill-rule="evenodd" clip-rule="evenodd"/>
+        </svg>
+        <div class="btn-store-text">
+          <span>Get it on</span>
+          <span>Google Play</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PARTNERS ─── -->
+<div class="partners">
+  <p class="partners-label">Featured Partners</p>
+  <div class="partners-grid">
+    <span class="partner-logo">EMAAR</span>
+    <span class="partner-logo">DAMAC</span>
+    <span class="partner-logo">NAKHEEL</span>
+    <span class="partner-logo">ACCOR</span>
+    <span class="partner-logo">Emirates</span>
+    <span class="partner-logo">QATAR</span>
+    <span class="partner-logo">AVIS</span>
+    <span class="partner-logo">BMW</span>
+    <span class="partner-logo">Mercedes</span>
+    <span class="partner-logo">LAND ROVER</span>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer id="contact">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="brand">TABLO</span>
+      <span class="tagline">Properties · Travel · Cars</span>
+      <p>One destination for all your luxury needs. From prime real estate to curated travel and premium vehicles — TABLO redefines the standard of excellence.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Properties</h4>
+      <ul>
+        <li><a href="#">Residential</a></li>
+        <li><a href="#">Commercial</a></li>
+        <li><a href="#">Off-Plan</a></li>
+        <li><a href="#">Investment</a></li>
+        <li><a href="#">Holiday Homes</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Travel</h4>
+      <ul>
+        <li><a href="#">Luxury Packages</a></li>
+        <li><a href="#">Flights</a></li>
+        <li><a href="#">Hotels</a></li>
+        <li><a href="#">Experiences</a></li>
+        <li><a href="#">Concierge</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#" id="about">About Us</a></li>
+        <li><a href="#" id="blog">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 TABLO. All rights reserved.</p>
+    <div class="social-links">
+      <a href="#">
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h.01M12 12h.01M18 12h.01"/></svg>
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"/></svg>
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function switchTab(btn, section) {
+    document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    ['properties','travel','cars'].forEach(s => {
+      document.getElementById('search-' + s).style.display = s === section ? 'grid' : 'none';
+    });
+  }
+
+  // Subtle nav scroll effect
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.background = window.scrollY > 60
+      ? 'rgba(10,10,10,0.98)'
+      : 'rgba(10,10,10,0.92)';
+  });
+</script>
+</body>
+</html>
