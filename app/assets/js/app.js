@@ -53,6 +53,7 @@ window.App = (function () {
     ).join('');
     el.innerHTML = `<div class="login-card">
       <div class="login-lang">${UI.icon('globe')}<div class="lang-pills">${langPills}</div></div>
+      <div class="login-mark">${UI.logo()}</div>
       <div class="login-logo"><div class="brand">TAB<span>LO</span></div></div>
       <div class="login-sub">${t('welcome_back')}</div>
       <form id="login-form">
@@ -115,7 +116,7 @@ window.App = (function () {
     app.innerHTML = `
       <header class="topbar">
         <div class="brand-block">
-          <div class="brand-logo">${UI.icon('building')}</div>
+          <div class="brand-logo">${UI.logo()}</div>
           <div class="brand-text"><div class="brand">TAB<span>LO</span></div><div class="tag">Real Estate</div></div>
         </div>
         <button class="icon-btn menu-toggle" id="menu-toggle">${UI.icon('menu')}</button>

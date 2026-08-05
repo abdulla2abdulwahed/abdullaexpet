@@ -108,6 +108,8 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
   box-shadow: var(--shadow);
   padding: 40px 34px;
 }
+.login-mark { width: 78px; height: 78px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.login-mark svg { display: block; width: 100%; height: 100%; }
 .login-logo { text-align: center; margin-bottom: 8px; }
 .login-logo .brand { font-size: 30px; font-weight: 800; letter-spacing: 5px; color: var(--navy); }
 :root[data-theme="dark"] .login-logo .brand { color: var(--text); }
@@ -183,8 +185,8 @@ textarea.input { resize: vertical; min-height: 84px; }
   border-right: 1px solid var(--border);
 }
 [dir="rtl"] .topbar .page-title, [dir="rtl"] .topbar .u-name, [dir="rtl"] .topbar .u-role { direction: rtl; }
-.brand-logo { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(150deg, var(--navy), #2b3b56); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.brand-logo svg { width: 22px; height: 22px; color: var(--gold); }
+.brand-logo { width: 42px; height: 42px; border-radius: 11px; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.brand-logo svg { display: block; width: 100%; height: 100%; }
 .brand-text .brand { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: var(--navy); line-height: 1; }
 :root[data-theme="dark"] .brand-text .brand { color: var(--text); }
 .brand-text .brand span { color: var(--gold); }

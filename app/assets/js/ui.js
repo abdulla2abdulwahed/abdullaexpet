@@ -53,6 +53,18 @@ window.UI = (function () {
   };
   function icon(name, cls) { return `<svg viewBox="0 0 24 24" ${cls ? 'class="' + cls + '"' : ''} aria-hidden="true">${ICONS[name] || ''}</svg>`; }
 
+  /* Brand mark — the Tablo house-with-T logo (self-contained, theme-agnostic). */
+  function logo() {
+    return `<svg viewBox="0 0 120 120" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Tablo Real Estate">
+      <rect width="120" height="120" rx="24" fill="#0c0d10"/>
+      <rect x="74" y="16" width="13" height="42" rx="2" fill="#d5a93b"/>
+      <path d="M10 60 L58 18 L110 60 Z" fill="#7f7395"/>
+      <path d="M31 57 H89 V90 a8 8 0 0 1 -8 8 H39 a8 8 0 0 1 -8 -8 Z" fill="#d5a93b"/>
+      <rect x="33" y="57" width="56" height="12.5" fill="#0c0d10"/>
+      <rect x="51.5" y="57" width="17" height="41" fill="#0c0d10"/>
+    </svg>`;
+  }
+
   /* ---------- Formatting ---------- */
   function money(n) {
     const cur = (DB.load().settings.currency) || 'IQD';
@@ -265,7 +277,7 @@ window.UI = (function () {
   const AGENT_OPTIONS = () => DB.meta.agents().filter(u => ['sales_agent','rental_agent','manager','administrator'].includes(u.role)).map(u => u.name);
 
   return {
-    icon, money, moneyShort, num, fdate, initials, esc, badge, toast, modal, close, confirm,
+    icon, logo, money, moneyShort, num, fdate, initials, esc, badge, toast, modal, close, confirm,
     field, formData, donut, bars, line, table, CHART_COLORS, t,
     PTYPE_OPTIONS, AGENT_OPTIONS, CITIES: () => DB.meta.CITIES, AREAS: () => DB.meta.AREAS,
   };
