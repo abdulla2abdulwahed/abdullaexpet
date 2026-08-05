@@ -38,8 +38,14 @@ window.App = (function () {
   function currentUser() { return DB.get('users', currentUserId) || DB.all('users')[0]; }
 
   function renderLogin() {
+    document.documentElement.setAttribute('dir', I18N.dir());
+    document.documentElement.setAttribute('lang', I18N.current());
     const el = document.getElementById('login-screen');
+    const langPills = I18N.langs().map(l =>
+      `<button type="button" class="lang-pill ${l.code === I18N.current() ? 'active' : ''}" data-lang="${l.code}">${UI.esc(l.name)}</button>`
+    ).join('');
     el.innerHTML = `<div class="login-card">
+      <div class="login-lang">${UI.icon('globe')}<div class="lang-pills">${langPills}</div></div>
       <div class="login-logo"><div class="brand">TAB<span>LO</span></div></div>
       <div class="login-sub">${t('welcome_back')}</div>
       <form id="login-form">
@@ -52,6 +58,10 @@ window.App = (function () {
         admin@tablo.com · manager@tablo.com<br>sales@tablo.com · accountant@tablo.com<br>
         <span style="opacity:.7">${t('password')}: any</span></div>
     </div>`;
+    el.querySelectorAll('[data-lang]').forEach(btn => btn.addEventListener('click', () => {
+      I18N.set(btn.getAttribute('data-lang'));
+      renderLogin();
+    }));
     document.getElementById('login-form').addEventListener('submit', e => {
       e.preventDefault();
       const email = e.target.email.value.trim().toLowerCase();
