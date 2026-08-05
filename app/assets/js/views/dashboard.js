@@ -45,12 +45,17 @@ Views.dashboard = function (root) {
   const qaHtml = actions.map(a => `<div class="qa" data-go="${a[3]}">
       <div class="qa-ic ${a[2]}">${UI.icon(a[1])}</div><div class="qa-label">${t(a[0])}</div></div>`).join('');
 
-  // ---- Trend area chart (sales vs rentals over recent weeks) ----
-  const weeks = 8, wl = [];
-  for (let i = 1; i <= weeks; i++) wl.push('W' + i);
-  const wobble = (base, amp, i) => Math.max(0, Math.round(base + amp * Math.sin(i * 1.1) + amp * 0.4 * Math.cos(i * 2.3)));
-  const salesSeries = wl.map((_, i) => wobble(48, 26, i + 1));
-  const rentSeries = wl.map((_, i) => wobble(56, 22, i + 3));
+  // ---- Trend area chart: real weekly contract counts (sales vs rentals) ----
+  const weeks = 8, weekBuckets = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const end = new Date(); end.setHours(23, 59, 59, 0); end.setDate(end.getDate() - i * 7);
+    const start = new Date(end); start.setDate(start.getDate() - 7);
+    weekBuckets.push({ start, end });
+  }
+  const inWeek = (dateStr, b) => { if (!dateStr) return false; const d = new Date(dateStr); return d > b.start && d <= b.end; };
+  const wl = weekBuckets.map((_, i) => 'W' + (i + 1));
+  const salesSeries = weekBuckets.map(b => contracts.filter(c => c.kind === 'sales' && inWeek(c.startDate || c.createdAt, b)).length);
+  const rentSeries = weekBuckets.map(b => contracts.filter(c => c.kind === 'rental' && inWeek(c.startDate || c.createdAt, b)).length);
   const trend = { labels: wl, sets: [
     { name: t('sale'), color: UI.CHART_COLORS[0], data: salesSeries },
     { name: t('rent'), color: '#1e2a3d', data: rentSeries },
@@ -76,6 +81,7 @@ Views.dashboard = function (root) {
   const recentTx = receipts.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   const reminders = DB.all('notifications').slice(0, 4);
   const reminderIcon = { contract: ['file', 'ic-blue'], rent: ['warning', 'ic-red'], property: ['calendar', 'ic-green'], payment: ['coins', 'ic-teal'], request: ['inbox', 'ic-orange'] };
+  const emptyHint = `<div class="cell-sub" style="text-align:center;padding:26px 0">${t('no_data')}</div>`;
 
   root.innerHTML = VC.pageHead(t('nav_dashboard'), DB.load().settings.company + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
     + `<div class="stat-grid kpi-grid">${kpiHtml}</div>
@@ -98,27 +104,27 @@ Views.dashboard = function (root) {
     <div class="grid-3">
       <div class="card"><div class="card-head"><h3>${t('latest_properties')}</h3><span class="card-link" data-go="properties">${t('view_all')} →</span></div>
         <div class="card-pad" style="display:flex;flex-direction:column;gap:14px">
-          ${latestProps.map(p => `<div style="display:flex;gap:12px;align-items:center">
+          ${latestProps.length ? latestProps.map(p => `<div style="display:flex;gap:12px;align-items:center">
             <div class="g-thumb" style="width:56px;height:44px;flex:0 0 56px;border-radius:9px;${p.gallery && p.gallery[0] ? `background-image:url('${p.gallery[0]}')` : ''}"></div>
             <div style="flex:1;min-width:0"><div class="cell-main">${t(p.type)} · ${t(p.purpose)}</div>
               <div class="cell-sub">${UI.icon('pin')} ${UI.esc(p.district)} · ${p.area} m² · ${p.id}</div></div>
             <div class="mono" style="font-weight:700;white-space:nowrap">${UI.money(p.purpose === 'sale' ? p.salePrice : p.rent)}</div>
-          </div>`).join('')}
+          </div>`).join('') : emptyHint}
         </div>
       </div>
 
       <div class="card"><div class="card-head"><h3>${t('recent_transactions')}</h3><span class="card-link" data-go="receipts">${t('view_all')} →</span></div>
         <div class="card-pad" style="display:flex;flex-direction:column;gap:2px">
-          ${recentTx.map(r => `<div class="kv"><span class="k">${UI.esc(r.forItem)}<div class="cell-sub">${UI.fdate(r.date)}</div></span>
-            <span class="v mono" style="color:var(--success)">+ ${UI.money(r.amount)}</span></div>`).join('')}
+          ${recentTx.length ? recentTx.map(r => `<div class="kv"><span class="k">${UI.esc(r.forItem)}<div class="cell-sub">${UI.fdate(r.date)}</div></span>
+            <span class="v mono" style="color:var(--success)">+ ${UI.money(r.amount)}</span></div>`).join('') : emptyHint}
         </div>
       </div>
 
       <div class="card"><div class="card-head"><h3>${t('reminders')}</h3><span class="card-link" data-go="settings">${t('view_all')} →</span></div>
         <div class="card-pad">
-          ${reminders.map(n => { const ic = reminderIcon[n.type] || ['bell', 'ic-gold']; return `<div class="reminder-row">
+          ${reminders.length ? reminders.map(n => { const ic = reminderIcon[n.type] || ['bell', 'ic-gold']; return `<div class="reminder-row">
             <div class="r-ic ${ic[1]}">${UI.icon(ic[0])}</div>
-            <div class="r-body"><div class="r-title">${UI.esc(n.title)}</div><div class="r-time">${UI.fdate(n.time)}</div></div></div>`; }).join('')}
+            <div class="r-body"><div class="r-title">${UI.esc(n.title)}</div><div class="r-time">${UI.fdate(n.time)}</div></div></div>`; }).join('') : emptyHint}
         </div>
       </div>
     </div>`;

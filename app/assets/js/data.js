@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════════════ */
 window.DB = (function () {
   const KEY = 'tablo_erp_db_v1';
-  const SEED_VERSION = 2;
+  const SEED_VERSION = 3;
 
   const CITIES = ['Erbil', 'Sulaymaniyah', 'Duhok', 'Kirkuk', 'Baghdad', 'Halabja'];
   const AREAS = ['Ankawa', 'Dream City', 'Italian Village', 'English Village', 'Downtown', 'Bakhtiari', 'Sarchnar', 'Naz City'];
@@ -30,11 +30,9 @@ window.DB = (function () {
   const phone = () => '+964 7' + rnd(50, 90) + ' ' + rnd(100, 999) + ' ' + rnd(1000, 9999);
   const emailOf = n => n.toLowerCase().replace(/[^a-z]/g, '.') + '@mail.com';
 
-  function seed() {
-    const db = { _v: SEED_VERSION };
-
-    // Users & roles
-    db.users = [
+  // User accounts + company settings are kept even when business data is wiped.
+  function makeUsers() {
+    return [
       { id: 'u-1', name: 'Abdulla Abdulwahed', email: 'admin@tablo.com', role: 'super_admin', phone: phone(), status: 'active', lastLogin: daysFromNow(0), avatar: '', twoFA: true },
       { id: 'u-2', name: 'Karwan Salih', email: 'manager@tablo.com', role: 'manager', phone: phone(), status: 'active', lastLogin: daysFromNow(-1), twoFA: false },
       { id: 'u-3', name: 'Sara Ahmed', email: 'sales@tablo.com', role: 'sales_agent', phone: phone(), status: 'active', lastLogin: daysFromNow(-1), twoFA: false },
@@ -42,6 +40,30 @@ window.DB = (function () {
       { id: 'u-5', name: 'Layla Karim', email: 'accountant@tablo.com', role: 'accountant', phone: phone(), status: 'active', lastLogin: daysFromNow(-3), twoFA: true },
       { id: 'u-6', name: 'Dara Amin', email: 'reception@tablo.com', role: 'receptionist', phone: phone(), status: 'inactive', lastLogin: daysFromNow(-14), twoFA: false },
     ];
+  }
+  function makeSettings() {
+    return {
+      company: 'Tablo Real Estate', office: 'Ankawa, Erbil, Kurdistan Region – Iraq',
+      phone: '+964 750 000 0000', email: 'info@tablo.com',
+      currency: 'IQD', timezone: 'Asia/Baghdad',
+      commissionRate: 2, taxRate: 5, lastBackup: daysFromNow(-1),
+    };
+  }
+  const BUSINESS_COLLECTIONS = ['customers','properties','requests','contracts','tenants','receipts','payments','deposits','expenses','notifications','audit'];
+
+  // Empty system — only user accounts + settings, no business records.
+  function seedEmpty() {
+    const db = { _v: SEED_VERSION, users: makeUsers(), settings: makeSettings() };
+    BUSINESS_COLLECTIONS.forEach(k => db[k] = []);
+    return db;
+  }
+
+  // Demo dataset — sample records for exploring/screenshots.
+  function seed() {
+    const db = { _v: SEED_VERSION };
+
+    // Users & roles
+    db.users = makeUsers();
     const agents = db.users.filter(u => ['sales_agent','rental_agent','manager'].includes(u.role));
 
     // Customers (CRM)
@@ -228,12 +250,7 @@ window.DB = (function () {
     }
 
     // Settings
-    db.settings = {
-      company: 'Tablo Real Estate', office: 'Ankawa, Erbil, Kurdistan Region – Iraq',
-      phone: '+964 750 000 0000', email: 'info@tablo.com',
-      currency: 'IQD', timezone: 'Asia/Baghdad',
-      commissionRate: 2, taxRate: 5, lastBackup: daysFromNow(-1),
-    };
+    db.settings = makeSettings();
 
     return db;
   }
@@ -245,11 +262,19 @@ window.DB = (function () {
       const raw = localStorage.getItem(KEY);
       if (raw) { const p = JSON.parse(raw); if (p && p._v === SEED_VERSION) { cache = p; return cache; } }
     } catch (e) {}
-    cache = seed(); persist();
+    cache = seedEmpty(); persist(); // start empty by default
     return cache;
   }
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} }
-  function reset() { localStorage.removeItem(KEY); cache = seed(); persist(); return cache; }
+  function reset() { cache = seedEmpty(); persist(); return cache; }
+  // Wipe all business records but keep user accounts + company settings.
+  function clearData() {
+    const db = load();
+    BUSINESS_COLLECTIONS.forEach(k => db[k] = []);
+    persist(); return db;
+  }
+  // Populate with the demo/sample dataset.
+  function loadDemo() { cache = seed(); persist(); return cache; }
 
   // generic collection helpers
   function all(coll) { return load()[coll] || []; }
@@ -273,7 +298,7 @@ window.DB = (function () {
   function saveSettings(s) { load().settings = { ...load().settings, ...s }; persist(); }
 
   return {
-    load, persist, reset, all, get, upsert, remove, saveSettings,
+    load, persist, reset, clearData, loadDemo, all, get, upsert, remove, saveSettings,
     uid, daysFromNow, meta: { CITIES, AREAS, PTYPES, IMGS, agents: () => all('users') },
   };
 })();

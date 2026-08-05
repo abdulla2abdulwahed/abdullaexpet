@@ -177,7 +177,7 @@ window.UI = (function () {
     const svg = `<svg viewBox="0 0 160 160" style="max-width:190px;width:100%">
         <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--surface-3)" stroke-width="20"/>
         ${segs}
-        <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="donut-center" fill="var(--text)" style="font-size:24px;font-weight:800">${opts.center || total}</text>
+        <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="donut-center" fill="var(--text)" style="font-size:24px;font-weight:800">${opts.center != null ? opts.center : total}</text>
         <text x="${cx}" y="${cy + 16}" text-anchor="middle" fill="var(--text-muted)" style="font-size:9px">${esc(opts.centerLabel || '')}</text>
       </svg>`;
     if (opts.hideLegend) return `<div style="text-align:center">${svg}</div>`;

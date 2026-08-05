@@ -107,8 +107,10 @@
             <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
               <button class="btn btn-primary" id="set-backup">${UI.icon('download')}${t('backup_now')}</button>
               <button class="btn" id="set-restore">${UI.icon('shield')}${t('restore')}</button>
-              <button class="btn btn-danger" id="set-reset">${UI.icon('trash')}${t('reset_data')}</button>
+              <button class="btn" id="set-loaddemo">${UI.icon('grid')}${t('load_sample_data')}</button>
+              <button class="btn btn-danger" id="set-delete">${UI.icon('trash')}${t('delete_all_data')}</button>
             </div>
+            <p class="cell-sub" style="margin-top:10px">${t('delete_all_hint')}</p>
           </div></div>
           <div class="card"><div class="card-head"><h3>${t('security_policies')}</h3></div><div class="card-pad">
             ${policy('Enforce Two-Factor Authentication', true)}
@@ -134,7 +136,8 @@
       DB.saveSettings({ lastBackup: DB.daysFromNow(0) }); UI.toast(t('backup_now') + ' ✓'); Views.settings(root);
     });
     document.getElementById('set-restore').addEventListener('click', () => UI.toast('Restore: select a backup file (demo).'));
-    document.getElementById('set-reset').addEventListener('click', () => UI.confirm(t('reset_data') + '?', () => { DB.reset(); UI.toast(t('saved')); App.rebuild(); }));
+    document.getElementById('set-loaddemo').addEventListener('click', () => UI.confirm(t('load_sample_data') + '?', () => { DB.loadDemo(); UI.toast(t('saved')); App.rebuild(); }));
+    document.getElementById('set-delete').addEventListener('click', () => UI.confirm(t('delete_all_confirm'), () => { DB.clearData(); UI.toast(t('deleted')); App.rebuild(); }));
   };
 
   /* ---- Profile ---- */
