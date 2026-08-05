@@ -39,6 +39,12 @@ window.DB = (function () {
       { id: 'u-4', name: 'Hemin Rasul', email: 'rental@tablo.com', role: 'rental_agent', phone: phone(), status: 'active', lastLogin: daysFromNow(-2), twoFA: false },
       { id: 'u-5', name: 'Layla Karim', email: 'accountant@tablo.com', role: 'accountant', phone: phone(), status: 'active', lastLogin: daysFromNow(-3), twoFA: true },
       { id: 'u-6', name: 'Dara Amin', email: 'reception@tablo.com', role: 'receptionist', phone: phone(), status: 'inactive', lastLogin: daysFromNow(-14), twoFA: false },
+      // Additional administrators
+      { id: 'u-7', name: 'Rezan Aziz', email: 'admin1@tablo.com', role: 'administrator', phone: phone(), status: 'active', lastLogin: daysFromNow(-1), twoFA: true },
+      { id: 'u-8', name: 'Shad Kamal', email: 'admin2@tablo.com', role: 'administrator', phone: phone(), status: 'active', lastLogin: daysFromNow(-2), twoFA: false },
+      { id: 'u-9', name: 'Nma Hama', email: 'admin3@tablo.com', role: 'administrator', phone: phone(), status: 'active', lastLogin: daysFromNow(0), twoFA: true },
+      { id: 'u-10', name: 'Aland Bawer', email: 'admin4@tablo.com', role: 'administrator', phone: phone(), status: 'active', lastLogin: daysFromNow(-5), twoFA: false },
+      { id: 'u-11', name: 'Darya Sirwan', email: 'admin5@tablo.com', role: 'administrator', phone: phone(), status: 'active', lastLogin: daysFromNow(-3), twoFA: true },
     ];
   }
   function makeSettings() {
@@ -260,10 +266,18 @@ window.DB = (function () {
     if (cache) return cache;
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) { const p = JSON.parse(raw); if (p && p._v === SEED_VERSION) { cache = p; return cache; } }
+      if (raw) { const p = JSON.parse(raw); if (p && p._v === SEED_VERSION) { cache = p; ensureSeedUsers(); return cache; } }
     } catch (e) {}
     cache = seedEmpty(); persist(); // start empty by default
     return cache;
+  }
+  // Non-destructive migration: make sure the seeded accounts exist without wiping data.
+  function ensureSeedUsers() {
+    if (!cache.users) cache.users = [];
+    const have = new Set(cache.users.map(u => u.id));
+    let changed = false;
+    makeUsers().forEach(u => { if (!have.has(u.id)) { cache.users.push(u); changed = true; } });
+    if (changed) persist();
   }
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} }
   function reset() { cache = seedEmpty(); persist(); return cache; }
