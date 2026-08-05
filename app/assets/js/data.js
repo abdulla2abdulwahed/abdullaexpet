@@ -150,12 +150,14 @@ window.DB = (function () {
       });
     }
 
-    // Tenants (derived from rental contracts)
-    db.tenants = db.contracts.filter(c => c.kind === 'rental').map(c => {
+    // Tenants (derived from rental contracts) — guarantee some outstanding/overdue
+    db.tenants = db.contracts.filter(c => c.kind === 'rental').map((c, idx) => {
       const prop = db.properties.find(p => p.id === c.property);
       const total = c.amount;
-      const paid = Math.random() < 0.35 ? Math.round(total * (Math.random() * 0.6)) : total;
-      const due = daysFromNow(rnd(-15, 25));
+      // every 3rd tenant carries a balance; the first two of those are overdue
+      const hasBalance = idx % 3 === 0;
+      const paid = hasBalance ? Math.round(total * (0.2 + Math.random() * 0.4)) : total;
+      const due = hasBalance && idx < 6 ? daysFromNow(-rnd(2, 15)) : daysFromNow(rnd(-3, 25));
       return {
         id: uid('tn'), name: c.partyB, phone: phone(), email: emailOf(c.partyB),
         contract: c.id, property: c.property, propertyLabel: prop ? prop.district + ', ' + prop.city : '',
@@ -165,15 +167,17 @@ window.DB = (function () {
       };
     });
 
-    // Receipts (incoming)
+    // Receipts (incoming) — guarantee several land in the current month
     db.receipts = [];
     let inv = 8000;
+    const dayOfMonth = new Date().getDate();
     for (let i = 0; i < 20; i++) {
+      const thisMonth = i < 6; // first six dated within the current month
       db.receipts.push({
         id: uid('rc'), invoice: 'INV-' + (inv++),
         customer: pick(db.customers).name, method: pick(['cash','bank','card','online']),
         amount: rnd(400, 12000), forItem: pick(['Rent Payment','Sale Deposit','Commission','Booking Fee']),
-        date: daysFromNow(-rnd(0, 120)), status: 'paid',
+        date: thisMonth ? daysFromNow(-rnd(0, dayOfMonth - 1)) : daysFromNow(-rnd(dayOfMonth + 2, 120)), status: 'paid',
       });
     }
     // Payments (outgoing)
