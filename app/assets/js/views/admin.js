@@ -138,9 +138,9 @@
   };
 
   /* ---- Profile ---- */
-  Views.profile = function (root) {
+  Views.profile = function (root, param) {
     const me = App.currentUser();
-    let tab = 'info';
+    let tab = ['info', 'password', 'security', 'history'].includes(param) ? param : 'info';
     root.innerHTML = VC.pageHead(t('nav_profile'), t('my_profile'));
     const card = document.createElement('div'); card.className = 'card'; card.style.marginBottom = '18px'; card.innerHTML = `<div class="card-pad" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
         <span class="avatar lg">${UI.initials(me.name)}</span>

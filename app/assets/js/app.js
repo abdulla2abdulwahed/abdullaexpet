@@ -6,24 +6,31 @@ window.App = (function () {
   let currentUserId = null;
   let route = 'dashboard';
 
+  // Each entry: { spec|route, label, icon, children?:[[spec,label,icon]] }
   const NAV = [
-    { group: 'grp_overview', items: [['dashboard', 'nav_dashboard', 'dashboard']] },
-    { group: 'grp_properties', items: [
-      ['properties', 'nav_properties', 'building'], ['for_sale', 'nav_for_sale', 'tag'],
-      ['for_rent', 'nav_for_rent', 'key'], ['requests', 'nav_requests', 'inbox'] ] },
-    { group: 'grp_sales', items: [['contracts', 'nav_contracts', 'file']] },
-    { group: 'grp_finance', items: [
-      ['receipts', 'nav_receipts', 'receipt'], ['payments', 'nav_payments', 'wallet'],
-      ['deposits', 'nav_deposits', 'shield'], ['expenses', 'nav_expenses', 'coins'] ] },
-    { group: 'grp_people', items: [
-      ['tenants', 'nav_tenants', 'users'], ['rent_collection', 'nav_rent_collection', 'money'],
-      ['customers', 'nav_customers', 'user'] ] },
-    { group: 'grp_admin', items: [
-      ['reports', 'nav_reports', 'chart'], ['users', 'nav_users', 'users'],
-      ['settings', 'nav_settings', 'settings'], ['profile', 'nav_profile', 'user'] ] },
+    { route: 'dashboard', label: 'nav_dashboard', icon: 'dashboard' },
+    { route: 'properties', label: 'nav_properties', icon: 'building', children: [
+      ['for_sale', 'nav_for_sale', 'tag'], ['for_rent', 'nav_for_rent', 'key'] ] },
+    { label: 'nav_requests', icon: 'inbox', children: [
+      ['requests|purchase', 'purchase_requests', 'inbox'], ['requests|rental', 'rental_requests', 'key'] ] },
+    { route: 'contracts', label: 'nav_contracts', icon: 'file', children: [
+      ['contracts|sales', 'sales_contracts', 'file'], ['contracts|rental', 'rental_contracts', 'file'], ['contracts|commercial', 'commercial_contracts', 'file'] ] },
+    { label: 'nav_vouchers', icon: 'receipt', children: [
+      ['receipts', 'nav_receipts', 'receipt'], ['payments', 'nav_payments', 'wallet'], ['deposits', 'nav_deposits', 'shield'] ] },
+    { label: 'nav_tenants', icon: 'users', children: [
+      ['tenants', 'nav_new_tenants', 'users'], ['rent_collection', 'nav_rent_collection', 'money'], ['rent_collection|overdue', 'overdue', 'warning'] ] },
+    { route: 'customers', label: 'nav_customers', icon: 'user' },
+    { route: 'expenses', label: 'nav_expenses', icon: 'coins' },
+    { route: 'reports', label: 'nav_reports', icon: 'chart', children: [
+      ['reports|property', 'property_reports', 'chart'], ['reports|financial', 'financial_reports', 'coins'], ['reports|agent', 'agent_reports', 'users'] ] },
+    { route: 'users', label: 'nav_users', icon: 'shield' },
+    { route: 'profile', label: 'nav_profile', icon: 'user', children: [
+      ['profile', 'nav_profile', 'user'], ['profile|password', 'change_password', 'lock'] ] },
+    { route: 'settings', label: 'nav_settings', icon: 'settings' },
   ];
   const ROUTE_TITLES = {};
-  NAV.forEach(g => g.items.forEach(i => ROUTE_TITLES[i[0]] = i[1]));
+  NAV.forEach(g => { if (g.route) ROUTE_TITLES[g.route] = g.label; (g.children || []).forEach(c => ROUTE_TITLES[c[0].split('|')[0]] = ROUTE_TITLES[c[0].split('|')[0]] || g.label); });
+  const expanded = new Set();
 
   /* ---------- Theme ---------- */
   function setTheme(theme) {
@@ -103,40 +110,69 @@ window.App = (function () {
   function buildChrome() {
     const app = document.getElementById('app');
     const unread = DB.all('notifications').filter(n => n.unread).length;
+    const u = currentUser();
+    const langName = (I18N.langs().find(l => l.code === I18N.current()) || {}).name || 'English';
     app.innerHTML = `
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-head"><div><div class="brand">TAB<span>LO</span></div><div class="tag">Real Estate ERP</div></div></div>
-        <nav class="sidebar-nav" id="nav"></nav>
-      </aside>
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-logo">${UI.icon('building')}</div>
+          <div class="brand-text"><div class="brand">TAB<span>LO</span></div><div class="tag">Real Estate</div></div>
+        </div>
+        <button class="icon-btn menu-toggle" id="menu-toggle">${UI.icon('menu')}</button>
+        <div class="page-title" id="page-title">${t('nav_dashboard')}</div>
+        <div class="spacer"></div>
+        <div class="search-box" id="search-box">${UI.icon('search')}<input placeholder="${t('search')}" id="global-search" autocomplete="off"></div>
+        <button class="icon-btn" id="theme-toggle" title="${t('theme')}"></button>
+        <div class="dropdown"><button class="icon-btn ${unread ? 'has-dot' : ''}" data-count="${unread}" id="notif-btn" title="${t('notifications')}">${UI.icon('bell')}</button></div>
+        <div class="dropdown"><div class="tb-lang" id="lang-btn">${UI.icon('globe')}<span class="lang-name">${UI.esc(langName)}</span></div></div>
+        <div class="dropdown"><div class="tb-user" id="user-btn">
+          <div class="u-meta"><div class="u-name">${UI.esc(DB.load().settings.company)}</div><div class="u-role">${t(u.role)}</div></div>
+          <span class="avatar">${UI.initials(u.name)}</span></div></div>
+      </header>
+      <aside class="sidebar" id="sidebar"><nav class="sidebar-nav" id="nav"></nav></aside>
       <div class="sidebar-backdrop" id="backdrop"></div>
-      <div class="main">
-        <header class="topbar">
-          <button class="icon-btn menu-toggle" id="menu-toggle">${UI.icon('menu')}</button>
-          <div class="page-title" id="page-title">${t('nav_dashboard')}</div>
-          <div class="spacer"></div>
-          <div class="search-box" id="search-box">${UI.icon('search')}<input placeholder="${t('search')}" id="global-search" autocomplete="off"></div>
-          <button class="icon-btn" id="theme-toggle" title="${t('theme')}"></button>
-          <div class="dropdown"><button class="icon-btn ${unread ? 'has-dot' : ''}" id="notif-btn" title="${t('notifications')}">${UI.icon('bell')}</button></div>
-          <div class="dropdown"><button class="icon-btn" id="lang-btn" title="${t('language')}">${UI.icon('globe')}</button></div>
-          <div class="dropdown"><button class="icon-btn" id="user-btn" style="background:var(--gold-dim);color:var(--gold)">${UI.initials(currentUser().name)}</button></div>
-        </header>
-        <main class="content" id="view-root"></main>
-      </div>`;
+      <div class="main"><main class="content" id="view-root"></main></div>`;
     buildNav();
-    setTheme(localStorage.getItem('tablo_theme') || 'dark');
+    setTheme(localStorage.getItem('tablo_theme') || 'light');
     wireTopbar();
   }
 
   function buildNav() {
     const nav = document.getElementById('nav');
+    if (!nav) return;
     const overdue = DB.all('tenants').filter(tn => tn.status === 'overdue').length;
     const reqCount = DB.all('requests').filter(r => r.status === 'pending').length;
-    const badges = { rent_collection: overdue, requests: reqCount };
-    nav.innerHTML = NAV.map(g => `<div class="nav-group-label">${t(g.group)}</div>` +
-      g.items.map(i => `<div class="nav-item ${route === i[0] ? 'active' : ''}" data-route="${i[0]}">
-        ${UI.icon(i[2])}<span>${t(i[1])}</span>${badges[i[0]] ? `<span class="nav-badge">${badges[i[0]]}</span>` : ''}</div>`).join('')
-    ).join('');
-    nav.querySelectorAll('[data-route]').forEach(el => el.addEventListener('click', () => { navigate(el.getAttribute('data-route')); closeSidebar(); }));
+    const badges = { rent_collection: overdue, 'requests|purchase': reqCount };
+    const base = route.split('|')[0];
+
+    // auto-expand the group containing the active route
+    NAV.forEach((g, gi) => { if (g.children && (g.route === base || g.children.some(c => c[0].split('|')[0] === base))) expanded.add(gi); });
+
+    nav.innerHTML = NAV.map((g, gi) => {
+      if (!g.children) {
+        const spec = g.route;
+        return `<div class="nav-item ${route === spec ? 'active' : ''}" data-nav="${spec}">
+          ${UI.icon(g.icon)}<span class="nav-label">${t(g.label)}</span>${badges[spec] ? `<span class="nav-badge">${badges[spec]}</span>` : ''}</div>`;
+      }
+      const open = expanded.has(gi);
+      const subBadgeTotal = g.children.reduce((s, c) => s + (badges[c[0]] || 0), 0);
+      const kids = g.children.map(c => `<div class="nav-item sub ${route === c[0] ? 'active' : ''}" data-nav="${c[0]}">
+        <span class="nav-label">${t(c[1])}</span>${badges[c[0]] ? `<span class="nav-badge">${badges[c[0]]}</span>` : ''}</div>`).join('');
+      return `<div class="nav-group ${open ? 'open' : ''}" data-group="${gi}">
+        <div class="nav-parent" data-toggle="${gi}">${UI.icon(g.icon, 'nav-ic')}<span class="nav-label">${t(g.label)}</span>
+          ${!open && subBadgeTotal ? `<span class="nav-badge">${subBadgeTotal}</span>` : ''}${UI.icon('chevron', 'nav-caret')}</div>
+        <div class="nav-sub">${kids}</div></div>`;
+    }).join('') + `<div class="nav-item nav-logout" data-action="logout">${UI.icon('logout')}<span class="nav-label">${t('logout')}</span></div>`;
+
+    nav.querySelectorAll('[data-toggle]').forEach(el => el.addEventListener('click', () => {
+      const gi = +el.getAttribute('data-toggle');
+      const g = NAV[gi];
+      if (expanded.has(gi) && !g.route) expanded.delete(gi); else expanded.add(gi);
+      if (g.route && route.split('|')[0] !== g.route) { navigate(g.route); closeSidebar(); return; }
+      buildNav();
+    }));
+    nav.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', () => { navigate(el.getAttribute('data-nav')); closeSidebar(); }));
+    const lo = nav.querySelector('[data-action="logout"]'); if (lo) lo.addEventListener('click', () => logout());
   }
 
   function wireTopbar() {
@@ -214,24 +250,25 @@ window.App = (function () {
   }
 
   /* ---------- Routing ---------- */
-  function navigate(r) {
-    if (!Views[r]) r = 'dashboard';
-    route = r;
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.getAttribute('data-route') === r));
+  function navigate(spec) {
+    const [base, param] = String(spec).split('|');
+    const r = Views[base] ? base : 'dashboard';
+    route = Views[base] ? spec : 'dashboard';
+    buildNav();
     const title = document.getElementById('page-title'); if (title) title.textContent = t(ROUTE_TITLES[r] || 'nav_dashboard');
     const root = document.getElementById('view-root');
     root.innerHTML = '';
     window.scrollTo(0, 0);
-    try { Views[r](root); } catch (e) { root.innerHTML = '<div class="empty-state">Error rendering view: ' + UI.esc(e.message) + '</div>'; console.error(e); }
+    try { Views[r](root, param); } catch (e) { root.innerHTML = '<div class="empty-state">Error rendering view: ' + UI.esc(e.message) + '</div>'; console.error(e); }
   }
 
-  function refreshChrome() { buildNav(); const t2 = document.getElementById('page-title'); if (t2) t2.textContent = t(ROUTE_TITLES[route]); }
+  function refreshChrome() { buildNav(); const t2 = document.getElementById('page-title'); if (t2) t2.textContent = t(ROUTE_TITLES[route.split('|')[0]]); }
   function rebuild() { document.documentElement.setAttribute('dir', I18N.dir()); buildChrome(); navigate(route); }
 
   /* ---------- Boot ---------- */
   function init() {
     I18N.set(I18N.current());
-    setTheme(localStorage.getItem('tablo_theme') || 'dark');
+    setTheme(localStorage.getItem('tablo_theme') || 'light');
     DB.load();
     const session = localStorage.getItem('tablo_session');
     if (session && DB.get('users', session)) { login(session); }

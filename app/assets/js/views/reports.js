@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
    Reports & Analytics — Financial, Property, Tenant, Agent.
 ═══════════════════════════════════════════════════════════════ */
-Views.reports = function (root) {
+Views.reports = function (root, param) {
   const t = k => I18N.t(k);
-  let tab = 'financial';
+  let tab = ['financial', 'property', 'tenant', 'agent'].includes(param) ? param : 'financial';
 
   root.innerHTML = VC.pageHead(t('nav_reports'), t('reports'),
     `<button class="btn" id="rp-print">${UI.icon('printer')}${t('print')}</button>`);

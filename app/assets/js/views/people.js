@@ -48,8 +48,8 @@
   }
 
   /* ---- Rent Collection ---- */
-  Views.rent_collection = function (root) {
-    let mode = 'all'; // all | overdue
+  Views.rent_collection = function (root, param) {
+    let mode = param === 'overdue' ? 'overdue' : 'all'; // all | overdue
     const wrap = document.createElement('div'); root.innerHTML = ''; root.appendChild(wrap);
     function paint() {
       const tenants = DB.all('tenants');

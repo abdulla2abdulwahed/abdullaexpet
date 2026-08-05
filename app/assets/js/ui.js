@@ -48,17 +48,32 @@ window.UI = (function () {
     mail: `<rect x="2" y="4" width="20" height="16" rx="2" ${P}/><path d="m22 7-10 6L2 7" ${P}/>`,
     clock: `<circle cx="12" cy="12" r="9" ${P}/><path d="M12 7v5l3 2" ${P}/>`,
     grid: `<rect x="3" y="3" width="7" height="7" ${P}/><rect x="14" y="3" width="7" height="7" ${P}/><rect x="14" y="14" width="7" height="7" ${P}/><rect x="3" y="14" width="7" height="7" ${P}/>`,
+    chevron: `<polyline points="6 9 12 15 18 9" ${P}/>`,
+    home: `<path d="M3 10.5 12 3l9 7.5" ${P}/><path d="M5 9.5V21h14V9.5" ${P}/><path d="M9.5 21v-6h5v6" ${P}/>`,
   };
   function icon(name, cls) { return `<svg viewBox="0 0 24 24" ${cls ? 'class="' + cls + '"' : ''} aria-hidden="true">${ICONS[name] || ''}</svg>`; }
 
   /* ---------- Formatting ---------- */
   function money(n) {
-    const cur = (DB.load().settings.currency) || 'USD';
-    const sym = { USD: '$', IQD: 'د.ع', EUR: '€' }[cur] || '$';
+    const cur = (DB.load().settings.currency) || 'IQD';
     const v = Math.round(n || 0).toLocaleString('en-US');
-    return cur === 'IQD' ? v + ' ' + sym : sym + v;
+    if (cur === 'IQD') return v + ' IQD';
+    const sym = { USD: '$', EUR: '€' }[cur] || '$';
+    return sym + v;
   }
   function num(n) { return (n || 0).toLocaleString('en-US'); }
+  function moneyShort(n) {
+    const cur = (DB.load().settings.currency) || 'IQD';
+    const suf = cur === 'IQD' ? ' IQD' : '';
+    const pre = cur === 'IQD' ? '' : ({ USD: '$', EUR: '€' }[cur] || '$');
+    const a = Math.abs(n || 0);
+    let v;
+    if (a >= 1e9) v = (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+    else if (a >= 1e6) v = (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    else if (a >= 1e4) v = Math.round(n / 1e3) + 'K';
+    else v = Math.round(n || 0).toLocaleString('en-US');
+    return pre + v + suf;
+  }
   function fdate(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString(I18N.current() === 'en' ? 'en-GB' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return d; } }
   function initials(n) { return (n || '?').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase(); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -159,14 +174,14 @@ window.UI = (function () {
       off += len; return el;
     }).join('');
     const legend = data.map((d, i) => `<span><i style="background:${d.color || CHART_COLORS[i % CHART_COLORS.length]}"></i>${esc(d.label)} · ${d.value}</span>`).join('');
-    return `<div style="text-align:center">
-      <svg viewBox="0 0 160 160" style="max-width:190px;width:100%">
+    const svg = `<svg viewBox="0 0 160 160" style="max-width:190px;width:100%">
         <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--surface-3)" stroke-width="20"/>
         ${segs}
-        <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="donut-center" fill="var(--text)" style="font-size:24px;font-weight:700">${opts.center || total}</text>
+        <text x="${cx}" y="${cy - 2}" text-anchor="middle" class="donut-center" fill="var(--text)" style="font-size:24px;font-weight:800">${opts.center || total}</text>
         <text x="${cx}" y="${cy + 16}" text-anchor="middle" fill="var(--text-muted)" style="font-size:9px">${esc(opts.centerLabel || '')}</text>
-      </svg>
-      <div class="chart-legend">${legend}</div></div>`;
+      </svg>`;
+    if (opts.hideLegend) return `<div style="text-align:center">${svg}</div>`;
+    return `<div style="text-align:center">${svg}<div class="chart-legend">${legend}</div></div>`;
   }
 
   function bars(series, opts = {}) {
@@ -250,7 +265,7 @@ window.UI = (function () {
   const AGENT_OPTIONS = () => DB.meta.agents().filter(u => ['sales_agent','rental_agent','manager','administrator'].includes(u.role)).map(u => u.name);
 
   return {
-    icon, money, num, fdate, initials, esc, badge, toast, modal, close, confirm,
+    icon, money, moneyShort, num, fdate, initials, esc, badge, toast, modal, close, confirm,
     field, formData, donut, bars, line, table, CHART_COLORS, t,
     PTYPE_OPTIONS, AGENT_OPTIONS, CITIES: () => DB.meta.CITIES, AREAS: () => DB.meta.AREAS,
   };

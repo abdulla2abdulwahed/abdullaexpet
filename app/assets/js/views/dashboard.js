@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   Dashboard — KPI widgets, charts, recent lists.
+   Dashboard — KPI widgets, quick actions, charts, recent lists.
+   Layout matches the Tablo design mockup.
 ═══════════════════════════════════════════════════════════════ */
 Views.dashboard = function (root) {
   const t = k => I18N.t(k);
@@ -13,97 +14,114 @@ Views.dashboard = function (root) {
   const forSale = props.filter(p => p.purpose === 'sale' && p.status !== 'archived');
   const forRent = props.filter(p => p.purpose === 'rent' && p.status !== 'archived');
   const activeContracts = contracts.filter(c => c.status === 'active' || c.status === 'signed');
-  const rentalIncome = tenants.reduce((s, tn) => s + tn.paid, 0);
-  const outstanding = tenants.reduce((s, tn) => s + tn.remaining, 0);
-
   const now = new Date();
-  const monthRevenue = receipts.filter(r => {
-    const d = new Date(r.date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).reduce((s, r) => s + r.amount, 0);
+  const sameMonth = (dateStr, d) => { const x = new Date(dateStr); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); };
+  const monthRevenue = receipts.filter(r => sameMonth(r.date, now)).reduce((s, r) => s + r.amount, 0);
 
-  // ---- KPI widgets ----
+  // ---- KPI widgets (6, matching mockup) ----
   const kpis = [
-    ['total_properties', UI.num(props.length), 'building', 'ic-gold', { dir: 'up', text: '+4 this month' }],
-    ['props_sale', UI.num(forSale.length), 'tag', 'ic-blue', null],
-    ['props_rent', UI.num(forRent.length), 'key', 'ic-purple', null],
-    ['requested_props', UI.num(requests.length), 'inbox', 'ic-amber', null],
-    ['active_contracts', UI.num(activeContracts.length), 'file', 'ic-green', { dir: 'up', text: '+2' }],
-    ['rental_income', UI.money(rentalIncome), 'coins', 'ic-green', { dir: 'up', text: '+8%' }],
-    ['monthly_revenue', UI.money(monthRevenue), 'chart', 'ic-gold', { dir: 'up', text: '+12%' }],
-    ['outstanding', UI.money(outstanding), 'wallet', 'ic-red', outstanding > 0 ? { dir: 'down', text: t('overdue') } : null],
+    ['total_properties', UI.num(props.length), 'building', 'ic-navy', { dir: 'up', text: '+4' }],
+    ['props_sale', UI.num(forSale.length), 'tag', 'ic-green', null],
+    ['props_rent', UI.num(forRent.length), 'key', 'ic-teal', null],
+    ['requested_props', UI.num(requests.length), 'inbox', 'ic-orange', null],
+    ['active_contracts', UI.num(activeContracts.length), 'file', 'ic-blue', { dir: 'up', text: '+2' }],
+    ['monthly_revenue', UI.moneyShort(monthRevenue), 'wallet', 'ic-gold', { dir: 'up', text: '+12%' }],
   ];
-  const kpiHtml = kpis.map(k => VC.stat(t(k[0]), k[1], k[2], k[3], k[4])).join('');
+  const kpiHtml = kpis.map(k => `<div class="stat">
+      <div class="st-body"><div class="lbl">${t(k[0])}</div><div class="val mono">${k[1]}</div>
+      ${k[4] ? `<div class="trend ${k[4].dir}">${UI.icon('trendUp')} ${UI.esc(k[4].text)}</div>` : ''}</div>
+      <div class="ic ${k[3]}">${UI.icon(k[2])}</div>
+    </div>`).join('');
 
-  // ---- Status distribution donut ----
-  const statusCounts = {};
-  props.forEach(p => statusCounts[p.status] = (statusCounts[p.status] || 0) + 1);
-  const donutData = Object.keys(statusCounts).map(s => ({ label: t(s), value: statusCounts[s] }));
+  // ---- Quick actions ----
+  const actions = [
+    ['add_property', 'home', 'ic-green', 'for_sale'],
+    ['new_request', 'user', 'ic-orange', 'requests'],
+    ['new_contract', 'file', 'ic-blue', 'contracts'],
+    ['new_receipt', 'coins', 'ic-teal', 'receipts'],
+    ['new_payment', 'wallet', 'ic-red', 'payments'],
+    ['nav_reports', 'chart', 'ic-gold', 'reports'],
+  ];
+  const qaHtml = actions.map(a => `<div class="qa" data-go="${a[3]}">
+      <div class="qa-ic ${a[2]}">${UI.icon(a[1])}</div><div class="qa-label">${t(a[0])}</div></div>`).join('');
 
-  // ---- Monthly sales & rentals (bars) ----
-  const months = [];
-  for (let i = 5; i >= 0; i--) { const d = new Date(); d.setMonth(d.getMonth() - i); months.push(d); }
-  const mLabel = d => d.toLocaleDateString('en-US', { month: 'short' });
-  const salesData = months.map(m => contracts.filter(c => c.kind === 'sales' && sameMonth(c.startDate, m)).length + rndSeed(m, 1, 4));
-  const rentData = months.map(m => contracts.filter(c => c.kind === 'rental' && sameMonth(c.startDate, m)).length + rndSeed(m, 1, 3));
-  const barSeries = { labels: months.map(mLabel), sets: [
-    { name: t('sale'), color: UI.CHART_COLORS[0], data: salesData },
-    { name: t('rent'), color: UI.CHART_COLORS[1], data: rentData },
+  // ---- Trend area chart (sales vs rentals over recent weeks) ----
+  const weeks = 8, wl = [];
+  for (let i = 1; i <= weeks; i++) wl.push('W' + i);
+  const wobble = (base, amp, i) => Math.max(0, Math.round(base + amp * Math.sin(i * 1.1) + amp * 0.4 * Math.cos(i * 2.3)));
+  const salesSeries = wl.map((_, i) => wobble(48, 26, i + 1));
+  const rentSeries = wl.map((_, i) => wobble(56, 22, i + 3));
+  const trend = { labels: wl, sets: [
+    { name: t('sale'), color: UI.CHART_COLORS[0], data: salesSeries },
+    { name: t('rent'), color: '#1e2a3d', data: rentSeries },
   ] };
 
-  // ---- Revenue vs Expenses (line) ----
-  const expenses = DB.all('expenses');
-  const revSeries = { labels: months.map(mLabel), sets: [
-    { name: t('revenue'), color: UI.CHART_COLORS[2], data: months.map(m => receipts.filter(r => sameMonth(r.date, m)).reduce((s, r) => s + r.amount, 0)) },
-    { name: t('expenses'), color: UI.CHART_COLORS[4], data: months.map(m => expenses.filter(e => sameMonth(e.date, m)).reduce((s, e) => s + e.amount, 0)) },
-  ] };
+  // ---- Property composition donut (by type) ----
+  const byType = {}; props.forEach(p => byType[p.type] = (byType[p.type] || 0) + 1);
+  const compEntries = Object.keys(byType).map(k => ({ type: k, value: byType[k] })).sort((a, b) => b.value - a.value);
+  const top = compEntries.slice(0, 5);
+  const otherVal = compEntries.slice(5).reduce((s, e) => s + e.value, 0);
+  const compData = top.map((e, i) => ({ label: t(e.type), value: e.value, color: UI.CHART_COLORS[i % UI.CHART_COLORS.length] }));
+  if (otherVal) {
+    const existing = compData.find(d => d.label === t('t_other'));
+    if (existing) existing.value += otherVal; // avoid duplicate "Other" in legend
+    else compData.push({ label: t('t_other'), value: otherVal, color: '#9aa3b0' });
+  }
+  const compTotal = props.length || 1;
+  const legendRows = compData.map(d => `<div class="lr"><i style="background:${d.color}"></i>
+      <span class="lr-name">${UI.esc(d.label)}</span><span class="lr-val">${Math.round((d.value / compTotal) * 100)}%</span></div>`).join('');
 
   // ---- Recent lists ----
-  const latestProps = props.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+  const latestProps = props.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
   const recentTx = receipts.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-  const upcomingRent = tenants.filter(tn => tn.remaining > 0).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)).slice(0, 5);
-  const recentClients = customers.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+  const reminders = DB.all('notifications').slice(0, 4);
+  const reminderIcon = { contract: ['file', 'ic-blue'], rent: ['warning', 'ic-red'], property: ['calendar', 'ic-green'], payment: ['coins', 'ic-teal'], request: ['inbox', 'ic-orange'] };
 
   root.innerHTML = VC.pageHead(t('nav_dashboard'), DB.load().settings.company + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
-    + `<div class="stat-grid">${kpiHtml}</div>
-    <div class="grid-12" style="margin-bottom:18px">
-      <div class="card"><div class="card-head"><h3>${t('sales_rental_stats')}</h3></div><div class="card-pad">${UI.bars(barSeries)}</div></div>
-      <div class="card"><div class="card-head"><h3>${t('status_distribution')}</h3></div><div class="card-pad">${UI.donut(donutData, { center: props.length, centerLabel: t('properties') })}</div></div>
-    </div>
-    <div class="card" style="margin-bottom:18px"><div class="card-head"><h3>${t('revenue_expenses')}</h3></div><div class="card-pad">${UI.line(revSeries, { money: true })}</div></div>
-    <div class="grid-2" style="margin-bottom:18px">
-      <div class="card"><div class="card-head"><h3>${t('latest_properties')}</h3></div>
-        ${UI.table({ columns: [
-          { label: t('property'), render: p => `<div class="cell-main">${p.id}</div><div class="cell-sub">${t(p.type)} · ${p.district}</div>` },
-          { label: t('purpose'), render: p => UI.badge(p.purpose === 'sale' ? 'sold' : 'rented', t(p.purpose)) },
-          { label: t('price'), align: 'end', render: p => `<span class="mono">${UI.money(p.purpose === 'sale' ? p.salePrice : p.rent)}</span>` },
-          { label: t('status'), align: 'end', render: p => UI.badge(p.status) },
-        ], rows: latestProps })}
-      </div>
-      <div class="card"><div class="card-head"><h3>${t('recent_transactions')}</h3></div>
-        ${UI.table({ columns: [
-          { label: t('invoice_no'), render: r => `<div class="cell-main">${r.invoice}</div><div class="cell-sub">${r.customer}</div>` },
-          { label: t('method'), render: r => `<span class="chip">${t(r.method)}</span>` },
-          { label: t('date'), render: r => UI.fdate(r.date) },
-          { label: t('amount'), align: 'end', render: r => `<span class="mono" style="color:var(--success)">${UI.money(r.amount)}</span>` },
-        ], rows: recentTx })}
+    + `<div class="stat-grid kpi-grid">${kpiHtml}</div>
+
+    <div class="grid-12" style="margin-bottom:20px">
+      <div class="card"><div class="card-head"><h3>${t('sales_rental_stats')}</h3></div><div class="card-pad">${UI.line(trend)}</div></div>
+      <div class="card"><div class="card-head"><h3>${t('status_distribution')}</h3></div>
+        <div class="card-pad" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div class="legend-rows" style="flex:1;min-width:150px">${legendRows}</div>
+          <div style="flex:0 0 160px">${UI.donut(compData, { center: props.length, centerLabel: t('properties'), hideLegend: true })}</div>
+        </div>
       </div>
     </div>
-    <div class="grid-2">
-      <div class="card"><div class="card-head"><h3>${t('upcoming_rent')}</h3></div>
-        ${UI.table({ columns: [
-          { label: t('tenant'), render: tn => `<div class="cell-main">${UI.esc(tn.name)}</div><div class="cell-sub">${UI.esc(tn.propertyLabel)}</div>` },
-          { label: t('due_date'), render: tn => UI.fdate(tn.dueDate) },
-          { label: t('remaining'), align: 'end', render: tn => `<span class="mono" style="color:var(--warning)">${UI.money(tn.remaining)}</span>` },
-        ], rows: upcomingRent, empty: t('no_data') })}
+
+    <div style="margin-bottom:20px">
+      <div class="nav-group-label" style="color:var(--text-muted);padding:0 2px 10px">${t('quick_actions')}</div>
+      <div class="quick-actions">${qaHtml}</div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card"><div class="card-head"><h3>${t('latest_properties')}</h3><span class="card-link" data-go="properties">${t('view_all')} →</span></div>
+        <div class="card-pad" style="display:flex;flex-direction:column;gap:14px">
+          ${latestProps.map(p => `<div style="display:flex;gap:12px;align-items:center">
+            <div class="g-thumb" style="width:56px;height:44px;flex:0 0 56px;border-radius:9px;${p.gallery && p.gallery[0] ? `background-image:url('${p.gallery[0]}')` : ''}"></div>
+            <div style="flex:1;min-width:0"><div class="cell-main">${t(p.type)} · ${t(p.purpose)}</div>
+              <div class="cell-sub">${UI.icon('pin')} ${UI.esc(p.district)} · ${p.area} m² · ${p.id}</div></div>
+            <div class="mono" style="font-weight:700;white-space:nowrap">${UI.money(p.purpose === 'sale' ? p.salePrice : p.rent)}</div>
+          </div>`).join('')}
+        </div>
       </div>
-      <div class="card"><div class="card-head"><h3>${t('recent_clients')}</h3></div>
-        ${UI.table({ columns: [
-          { label: t('name'), render: c => `<div class="with-avatar"><span class="avatar">${UI.initials(c.name)}</span><div><div class="cell-main">${UI.esc(c.name)}</div><div class="cell-sub">${UI.esc(c.phone)}</div></div></div>` },
-          { label: t('role'), align: 'end', render: c => `<span class="chip">${t(c.role + 's') || c.role}</span>` },
-        ], rows: recentClients })}
+
+      <div class="card"><div class="card-head"><h3>${t('recent_transactions')}</h3><span class="card-link" data-go="receipts">${t('view_all')} →</span></div>
+        <div class="card-pad" style="display:flex;flex-direction:column;gap:2px">
+          ${recentTx.map(r => `<div class="kv"><span class="k">${UI.esc(r.forItem)}<div class="cell-sub">${UI.fdate(r.date)}</div></span>
+            <span class="v mono" style="color:var(--success)">+ ${UI.money(r.amount)}</span></div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card"><div class="card-head"><h3>${t('reminders')}</h3><span class="card-link" data-go="settings">${t('view_all')} →</span></div>
+        <div class="card-pad">
+          ${reminders.map(n => { const ic = reminderIcon[n.type] || ['bell', 'ic-gold']; return `<div class="reminder-row">
+            <div class="r-ic ${ic[1]}">${UI.icon(ic[0])}</div>
+            <div class="r-body"><div class="r-title">${UI.esc(n.title)}</div><div class="r-time">${UI.fdate(n.time)}</div></div></div>`; }).join('')}
+        </div>
       </div>
     </div>`;
 
-  function sameMonth(dateStr, d) { const x = new Date(dateStr); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); }
-  function rndSeed(d, a, b) { const s = (d.getMonth() * 7 + 3) % (b - a + 1); return a + s; }
+  root.querySelectorAll('[data-go]').forEach(el => el.addEventListener('click', () => App.navigate(el.getAttribute('data-go'))));
 };

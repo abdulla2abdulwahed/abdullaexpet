@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════════════ */
 window.DB = (function () {
   const KEY = 'tablo_erp_db_v1';
-  const SEED_VERSION = 1;
+  const SEED_VERSION = 2;
 
   const CITIES = ['Erbil', 'Sulaymaniyah', 'Duhok', 'Kirkuk', 'Baghdad', 'Halabja'];
   const AREAS = ['Ankawa', 'Dream City', 'Italian Village', 'English Village', 'Downtown', 'Bakhtiari', 'Sarchnar', 'Naz City'];
@@ -58,18 +58,18 @@ window.DB = (function () {
     }
     const custByRole = r => db.customers.filter(c => c.role === r);
 
-    // Properties
+    // Properties (prices in IQD scale)
     db.properties = [];
     const statuses = ['available','reserved','sold','rented','archived'];
-    for (let i = 0; i < 34; i++) {
+    for (let i = 0; i < 48; i++) {
       const purpose = Math.random() < 0.55 ? 'sale' : 'rent';
       let status;
       if (purpose === 'sale') status = pick(['available','available','reserved','sold']);
       else status = pick(['available','available','rented','reserved']);
       if (i % 17 === 0) status = 'archived';
       const type = pick(PTYPES);
-      const salePrice = rnd(80, 900) * 1000;
-      const rent = rnd(400, 3500);
+      const salePrice = rnd(90, 900) * 1000000;
+      const rent = rnd(400, 3500) * 1000;
       const gallery = [];
       const gcount = rnd(2, 5);
       for (let g = 0; g < gcount; g++) gallery.push(pick(IMGS) + '?auto=format&fit=crop&w=600&q=60');
@@ -94,13 +94,13 @@ window.DB = (function () {
 
     // Property Requests
     db.requests = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 22; i++) {
       const kind = Math.random() < 0.55 ? 'purchase' : 'rental';
       db.requests.push({
         id: uid('rq'), kind,
         client: fullName(), phone: phone(),
         type: pick(PTYPES), area: rnd(100, 500),
-        budget: kind === 'purchase' ? rnd(90, 700) * 1000 : rnd(400, 2500),
+        budget: kind === 'purchase' ? rnd(90, 700) * 1000000 : rnd(400, 2500) * 1000,
         location: pick(AREAS) + ', ' + pick(CITIES),
         bedrooms: rnd(1, 5),
         moveIn: kind === 'rental' ? daysFromNow(rnd(5, 60)) : null,
@@ -143,7 +143,7 @@ window.DB = (function () {
       db.contracts.push({
         id: 'CN-' + (cn++), kind: 'commercial', property: pick(db.properties).id, propertyType: 't_commercial',
         partyA: 'Rojava Trading Co.', partyB: fullName(), business: 'Retail Store',
-        amount: rnd(2000, 8000), deposit: rnd(4000, 16000), commission: rnd(2000, 5000),
+        amount: rnd(2000, 8000) * 1000, deposit: rnd(4000, 16000) * 1000, commission: rnd(2000, 5000) * 1000,
         startDate: start, endDate: daysFromNow(rnd(30, 400)),
         status: 'active', taxId: 'TX-' + rnd(10000, 99999), agent: pick(agents).name,
         signed: true, createdAt: start,
@@ -176,7 +176,7 @@ window.DB = (function () {
       db.receipts.push({
         id: uid('rc'), invoice: 'INV-' + (inv++),
         customer: pick(db.customers).name, method: pick(['cash','bank','card','online']),
-        amount: rnd(400, 12000), forItem: pick(['Rent Payment','Sale Deposit','Commission','Booking Fee']),
+        amount: rnd(400, 12000) * 1000, forItem: pick(['Rent Payment','Sale Deposit','Commission','Booking Fee']),
         date: thisMonth ? daysFromNow(-rnd(0, dayOfMonth - 1)) : daysFromNow(-rnd(dayOfMonth + 2, 120)), status: 'paid',
       });
     }
@@ -186,7 +186,7 @@ window.DB = (function () {
     for (let i = 0; i < 16; i++) {
       db.payments.push({
         id: uid('py'), vendor: pick(['Zagros Maintenance','KRG Electricity','Newroz Telecom','Staff Payroll','Ashti Supplies','Tax Authority']),
-        category: pick(payCats), amount: rnd(200, 6000),
+        category: pick(payCats), amount: rnd(200, 6000) * 1000,
         method: pick(['cash','bank','card']), date: daysFromNow(-rnd(0, 90)),
       });
     }
@@ -202,7 +202,7 @@ window.DB = (function () {
     const exCats = ['Office Rent','Employee Salaries','Marketing','Fuel','Utilities','Internet','Maintenance','Equipment','Miscellaneous'];
     for (let i = 0; i < 22; i++) {
       db.expenses.push({
-        id: uid('ex'), category: pick(exCats), amount: rnd(150, 5000),
+        id: uid('ex'), category: pick(exCats), amount: rnd(150, 5000) * 1000,
         vendor: pick(['Landlord','HR','Ad Agency','Fuel Station','KRG','Telecom','Contractor','Store']),
         date: daysFromNow(-rnd(0, 340)), notes: '',
       });
@@ -231,7 +231,7 @@ window.DB = (function () {
     db.settings = {
       company: 'Tablo Real Estate', office: 'Ankawa, Erbil, Kurdistan Region – Iraq',
       phone: '+964 750 000 0000', email: 'info@tablo.com',
-      currency: 'USD', timezone: 'Asia/Baghdad',
+      currency: 'IQD', timezone: 'Asia/Baghdad',
       commissionRate: 2, taxRate: 5, lastBackup: daysFromNow(-1),
     };
 

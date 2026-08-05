@@ -81,8 +81,8 @@
       onOpen(ov) { ov.querySelector('[data-print]').addEventListener('click', () => window.print()); } });
   }
 
-  Views.contracts = function (root) {
-    let kind = 'all';
+  Views.contracts = function (root, param) {
+    let kind = ['sales', 'rental', 'commercial'].includes(param) ? param : 'all';
     const wrap = document.createElement('div'); root.innerHTML = ''; root.appendChild(wrap);
     function paint() {
       const ctrl = VC.crudList(wrap, {

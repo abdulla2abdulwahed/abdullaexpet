@@ -36,8 +36,8 @@
     ];
   }
 
-  Views.requests = function (root) {
-    let kind = 'all';
+  Views.requests = function (root, param) {
+    let kind = (param === 'purchase' || param === 'rental') ? param : 'all';
     const wrap = document.createElement('div');
     root.innerHTML = '';
     root.appendChild(wrap);
