@@ -144,10 +144,6 @@ window.App = (function () {
     const overdue = DB.all('tenants').filter(tn => tn.status === 'overdue').length;
     const reqCount = DB.all('requests').filter(r => r.status === 'pending').length;
     const badges = { rent_collection: overdue, 'requests|purchase': reqCount };
-    const base = route.split('|')[0];
-
-    // auto-expand the group containing the active route
-    NAV.forEach((g, gi) => { if (g.children && (g.route === base || g.children.some(c => c[0].split('|')[0] === base))) expanded.add(gi); });
 
     nav.innerHTML = NAV.map((g, gi) => {
       if (!g.children) {
@@ -165,11 +161,19 @@ window.App = (function () {
         <div class="nav-sub">${kids}</div></div>`;
     }).join('') + `<div class="nav-item nav-logout" data-action="logout">${UI.icon('logout')}<span class="nav-label">${t('logout')}</span></div>`;
 
+    // caret toggles expand/collapse without navigating (works for every group)
+    nav.querySelectorAll('.nav-caret').forEach(c => c.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = +c.closest('[data-toggle]').getAttribute('data-toggle');
+      if (expanded.has(gi)) expanded.delete(gi); else expanded.add(gi);
+      buildNav();
+    }));
     nav.querySelectorAll('[data-toggle]').forEach(el => el.addEventListener('click', () => {
       const gi = +el.getAttribute('data-toggle');
       const g = NAV[gi];
-      if (expanded.has(gi) && !g.route) expanded.delete(gi); else expanded.add(gi);
-      if (g.route && route.split('|')[0] !== g.route) { navigate(g.route); closeSidebar(); return; }
+      // parent-with-page navigates (and opens); pure group headers just toggle
+      if (g.route) { if (route.split('|')[0] !== g.route) { navigate(g.route); closeSidebar(); } else { if (expanded.has(gi)) expanded.delete(gi); else expanded.add(gi); buildNav(); } return; }
+      if (expanded.has(gi)) expanded.delete(gi); else expanded.add(gi);
       buildNav();
     }));
     nav.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', () => { navigate(el.getAttribute('data-nav')); closeSidebar(); }));
@@ -255,6 +259,8 @@ window.App = (function () {
     const [base, param] = String(spec).split('|');
     const r = Views[base] ? base : 'dashboard';
     route = Views[base] ? spec : 'dashboard';
+    // open the group that contains the destination (only on navigation, so manual collapse sticks)
+    NAV.forEach((g, gi) => { if (g.children && (g.route === r || g.children.some(c => c[0].split('|')[0] === r))) expanded.add(gi); });
     buildNav();
     const title = document.getElementById('page-title'); if (title) title.textContent = t(ROUTE_TITLES[r] || 'nav_dashboard');
     const root = document.getElementById('view-root');

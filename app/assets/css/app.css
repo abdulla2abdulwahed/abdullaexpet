@@ -221,7 +221,8 @@ textarea.input { resize: vertical; min-height: 84px; }
 .nav-item.active { background: var(--gold); color: #14100a; font-weight: 600; }
 .nav-item svg, .nav-parent svg.nav-ic { width: 18px; height: 18px; flex-shrink: 0; }
 .nav-item .nav-label, .nav-parent .nav-label { flex: 1; }
-.nav-caret { width: 15px; height: 15px; transition: transform var(--transition); color: var(--side-muted); }
+.nav-caret { width: 15px; height: 15px; padding: 5px; box-sizing: content-box; margin-inline-end: -5px; border-radius: 6px; transition: transform var(--transition), background var(--transition); color: var(--side-muted); }
+.nav-caret:hover { background: rgba(255,255,255,0.1); color: #fff; }
 .nav-group.open .nav-caret { transform: rotate(180deg); }
 .nav-sub { overflow: hidden; max-height: 0; transition: max-height var(--transition); }
 .nav-group.open .nav-sub { max-height: 340px; }
