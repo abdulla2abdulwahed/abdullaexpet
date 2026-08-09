@@ -46,19 +46,70 @@
     root.appendChild(head); root.appendChild(body);
   };
 
+  /* ---- Number to words (English) for the receipt ---- */
+  function toWords(n) {
+    n = Math.round(n || 0);
+    if (n === 0) return 'Zero';
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    function three(num) {
+      let s = ''; const h = Math.floor(num / 100), r = num % 100;
+      if (h) s += ones[h] + ' Hundred' + (r ? ' ' : '');
+      if (r < 20) s += ones[r];
+      else { s += tens[Math.floor(r / 10)]; if (r % 10) s += '-' + ones[r % 10]; }
+      return s;
+    }
+    const units = ['', 'Thousand', 'Million', 'Billion'];
+    let words = '', i = 0;
+    while (n > 0) { const chunk = n % 1000; if (chunk) words = three(chunk) + (units[i] ? ' ' + units[i] : '') + (words ? ' ' + words : ''); n = Math.floor(n / 1000); i++; }
+    return words.trim();
+  }
+  function amountWords(amount, currency) {
+    const w = { USD: 'US Dollars', IQD: 'Iraqi Dinars', EUR: 'Euros' }[currency] || (currency || '');
+    return toWords(amount) + ' ' + w + ' Only';
+  }
+
+  function receiptCopy(r, s) {
+    const cur = s.currency || 'IQD';
+    const dt = new Date(r.date);
+    const stamp = dt.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')
+      + ' – ' + dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const field = (en, ku, val) => `<div class="rf"><span class="rf-ku">${ku}:</span><span class="rf-val">${val}</span><span class="rf-en">${en}:</span></div>`;
+    return `<div class="rcpt" dir="rtl">
+      <div class="rcpt-head">
+        <div class="rcpt-company">
+          <div class="rc-ku">کۆمپانیای تابلۆ بۆ خانووبەرە</div>
+          <div class="rc-ar">شركة تابلو العقارية</div>
+          <div class="rc-en">${UI.esc(s.company)}</div>
+        </div>
+        <div class="rcpt-logo">${UI.logo()}</div>
+      </div>
+      <div class="rcpt-rule"></div>
+      <div class="rcpt-meta">
+        <span>پسوولە # ${UI.esc(r.invoice)}</span>
+        <span class="rcpt-title">پسوولەی پارەوەرگرتن${r.forItem ? ' (' + UI.esc(r.forItem) + ')' : ''}<br><small>Receipt of Payment</small></span>
+        <span>بەروار / Date: ${stamp}</span>
+      </div>
+      <div class="rcpt-fields">
+        ${field('Receipt from', 'وەرگری لە', UI.esc(r.customer))}
+        ${field('Amount', 'بڕی پارە و قەدرە', '<b>' + UI.money(r.amount) + '</b> — ' + amountWords(r.amount, cur))}
+        ${field('For', 'لە بری', UI.esc(r.forItem || '—'))}
+        ${field('Receptor', 'وەرگر / الدافع', UI.esc(App.currentUser().name))}
+        ${field('Note', 'تێبینی / الملاحظات', UI.esc(r.note || '—'))}
+      </div>
+      <div class="rcpt-sign">
+        <div><div class="rs-line"></div>واژووی پێکخەر<br><small>Prepared by</small></div>
+        <div><div class="rs-line"></div>وەرگر واژوو<br><small>Receiver</small></div>
+        <div><div class="rs-line"></div>کۆمپانیای عقاراتی تابلۆ<br><small>Tablo Real Estate</small></div>
+      </div>
+    </div>`;
+  }
+
   function printReceipt(r) {
     const s = DB.load().settings;
-    UI.modal({ title: r.invoice, body: `<div class="print-doc" id="print-area">
-      <div style="text-align:center;margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:3px">TAB<span style="color:var(--brand-gold)">LO</span></div>
-      <div class="cell-sub">${UI.esc(s.company)}</div></div>
-      <h3 style="text-align:center;margin-bottom:16px">${t('receipt')}</h3>
-      <div class="kv"><span class="k">${t('invoice_no')}</span><span class="v">${r.invoice}</span></div>
-      <div class="kv"><span class="k">${t('client')}</span><span class="v">${UI.esc(r.customer)}</span></div>
-      <div class="kv"><span class="k">${t('details')}</span><span class="v">${UI.esc(r.forItem)}</span></div>
-      <div class="kv"><span class="k">${t('method')}</span><span class="v">${t(r.method)}</span></div>
-      <div class="kv"><span class="k">${t('date')}</span><span class="v">${UI.fdate(r.date)}</span></div>
-      <div class="kv" style="font-size:18px;margin-top:8px"><span class="k">${t('amount')}</span><span class="v mono" style="color:var(--success)">${UI.money(r.amount)}</span></div>
-      <p class="cell-sub" style="text-align:center;margin-top:24px">Thank you for your business.</p></div>`,
+    // two copies per page (office + customer), matching the reference
+    const body = `<div class="print-doc" id="print-area">${receiptCopy(r, s)}${receiptCopy(r, s)}</div>`;
+    UI.modal({ title: r.invoice, wide: true, body,
       footer: `<button class="btn" data-close>${t('close')}</button><button class="btn btn-primary no-print" data-print>${UI.icon('printer')}${t('print')}</button>`,
       onOpen(ov) { ov.querySelector('[data-print]').addEventListener('click', () => window.print()); } });
   }
