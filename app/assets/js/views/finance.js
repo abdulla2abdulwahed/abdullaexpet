@@ -49,7 +49,7 @@
   function printReceipt(r) {
     const s = DB.load().settings;
     UI.modal({ title: r.invoice, body: `<div class="print-doc" id="print-area">
-      <div style="text-align:center;margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:3px">TAB<span style="color:var(--gold)">LO</span></div>
+      <div style="text-align:center;margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:3px">TAB<span style="color:var(--brand-gold)">LO</span></div>
       <div class="cell-sub">${UI.esc(s.company)}</div></div>
       <h3 style="text-align:center;margin-bottom:16px">${t('receipt')}</h3>
       <div class="kv"><span class="k">${t('invoice_no')}</span><span class="v">${r.invoice}</span></div>

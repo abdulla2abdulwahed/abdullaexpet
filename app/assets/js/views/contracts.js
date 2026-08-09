@@ -134,7 +134,7 @@
     const s = DB.load().settings;
     const body = `<div class="print-doc" id="print-area">
       <div style="text-align:center;margin-bottom:18px">
-        <div style="font-size:22px;font-weight:700;letter-spacing:3px">TAB<span style="color:var(--gold)">LO</span></div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:3px">TAB<span style="color:var(--brand-gold)">LO</span></div>
         <div class="cell-sub">${UI.esc(s.company)} · ${UI.esc(s.office)}</div>
       </div>
       <h3 style="text-align:center;margin-bottom:16px">${t(c.kind + '_contracts')}${c.id ? ' — ' + c.id : ''}</h3>
