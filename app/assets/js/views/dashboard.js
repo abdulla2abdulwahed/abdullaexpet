@@ -1,133 +1,57 @@
 /* ═══════════════════════════════════════════════════════════════
-   Dashboard — KPI widgets, quick actions, charts, recent lists.
-   Layout matches the Tablo design mockup.
+   Dashboard — card layout matching the Tablo HERP reference:
+   breadcrumb, shortcut cards, and blue info-box stat cards.
 ═══════════════════════════════════════════════════════════════ */
 Views.dashboard = function (root) {
   const t = k => I18N.t(k);
   const props = DB.all('properties');
   const contracts = DB.all('contracts');
-  const receipts = DB.all('receipts');
-  const tenants = DB.all('tenants');
-  const customers = DB.all('customers');
-  const requests = DB.all('requests');
 
-  const forSale = props.filter(p => p.purpose === 'sale' && p.status !== 'archived');
-  const forRent = props.filter(p => p.purpose === 'rent' && p.status !== 'archived');
-  const activeContracts = contracts.filter(c => c.status === 'active' || c.status === 'signed');
-  const now = new Date();
-  const sameMonth = (dateStr, d) => { const x = new Date(dateStr); return x.getMonth() === d.getMonth() && x.getFullYear() === d.getFullYear(); };
-  const monthRevenue = receipts.filter(r => sameMonth(r.date, now)).reduce((s, r) => s + r.amount, 0);
+  const forSale = props.filter(p => p.purpose === 'sale' && p.status !== 'archived').length;
+  const forRent = props.filter(p => p.purpose === 'rent' && p.status !== 'archived').length;
+  const salesC = contracts.filter(c => c.kind === 'sales').length;
+  const rentalC = contracts.filter(c => c.kind === 'rental').length;
 
-  // ---- KPI widgets (6, matching mockup) ----
-  const kpis = [
-    ['total_properties', UI.num(props.length), 'building', 'ic-navy', { dir: 'up', text: '+4' }],
-    ['props_sale', UI.num(forSale.length), 'tag', 'ic-green', null],
-    ['props_rent', UI.num(forRent.length), 'key', 'ic-teal', null],
-    ['requested_props', UI.num(requests.length), 'inbox', 'ic-orange', null],
-    ['active_contracts', UI.num(activeContracts.length), 'file', 'ic-blue', { dir: 'up', text: '+2' }],
-    ['monthly_revenue', UI.moneyShort(monthRevenue), 'wallet', 'ic-gold', { dir: 'up', text: '+12%' }],
+  // ---- Shortcut cards (top row) ----
+  const shortcuts = [
+    { label: 'sales_contracts', icon: 'file', go: 'contracts|sales' },
+    { label: 'rental_contracts', icon: 'file', go: 'contracts|rental' },
+    { label: 'nav_receipts', icon: 'receipt', go: 'receipts' },
+    { label: 'nav_customers', icon: 'user', go: 'customers' },
   ];
-  const kpiHtml = kpis.map(k => `<div class="stat">
-      <div class="st-body"><div class="lbl">${t(k[0])}</div><div class="val mono">${k[1]}</div>
-      ${k[4] ? `<div class="trend ${k[4].dir}">${UI.icon('trendUp')} ${UI.esc(k[4].text)}</div>` : ''}</div>
-      <div class="ic ${k[3]}">${UI.icon(k[2])}</div>
+
+  // ---- Info-box stat cards ----
+  const stats = [
+    { label: 'nav_for_sale', icon: 'tag', value: forSale, go: 'for_sale' },
+    { label: 'nav_for_rent', icon: 'key', value: forRent, go: 'for_rent' },
+    { label: 'nav_requests', icon: 'inbox', value: DB.all('requests').length, go: 'requests' },
+    { label: 'nav_customers', icon: 'user', value: DB.all('customers').length, go: 'customers' },
+    { label: 'sales_contracts', icon: 'file', value: salesC, go: 'contracts|sales' },
+    { label: 'rental_contracts', icon: 'file', value: rentalC, go: 'contracts|rental' },
+    { label: 'nav_receipts', icon: 'receipt', value: DB.all('receipts').length, go: 'receipts' },
+    { label: 'nav_tenants', icon: 'users', value: DB.all('tenants').length, go: 'tenants' },
+  ];
+
+  const shortcutHtml = shortcuts.map(c => `<div class="link-card" data-go="${c.go}">
+      <div class="lc-label">${t(c.label)}</div>
+      <div class="lc-icon">${UI.icon(c.icon)}</div>
     </div>`).join('');
 
-  // ---- Quick actions ----
-  const actions = [
-    ['add_property', 'home', 'ic-green', 'for_sale'],
-    ['new_request', 'user', 'ic-orange', 'requests'],
-    ['new_contract', 'file', 'ic-blue', 'contracts'],
-    ['new_receipt', 'coins', 'ic-teal', 'receipts'],
-    ['new_payment', 'wallet', 'ic-red', 'payments'],
-    ['nav_reports', 'chart', 'ic-gold', 'reports'],
-  ];
-  const qaHtml = actions.map(a => `<div class="qa" data-go="${a[3]}">
-      <div class="qa-ic ${a[2]}">${UI.icon(a[1])}</div><div class="qa-label">${t(a[0])}</div></div>`).join('');
-
-  // ---- Trend area chart: real weekly contract counts (sales vs rentals) ----
-  const weeks = 8, weekBuckets = [];
-  for (let i = weeks - 1; i >= 0; i--) {
-    const end = new Date(); end.setHours(23, 59, 59, 0); end.setDate(end.getDate() - i * 7);
-    const start = new Date(end); start.setDate(start.getDate() - 7);
-    weekBuckets.push({ start, end });
-  }
-  const inWeek = (dateStr, b) => { if (!dateStr) return false; const d = new Date(dateStr); return d > b.start && d <= b.end; };
-  const wl = weekBuckets.map((_, i) => 'W' + (i + 1));
-  const salesSeries = weekBuckets.map(b => contracts.filter(c => c.kind === 'sales' && inWeek(c.startDate || c.createdAt, b)).length);
-  const rentSeries = weekBuckets.map(b => contracts.filter(c => c.kind === 'rental' && inWeek(c.startDate || c.createdAt, b)).length);
-  const trend = { labels: wl, sets: [
-    { name: t('sale'), color: UI.CHART_COLORS[0], data: salesSeries },
-    { name: t('rent'), color: '#1e2a3d', data: rentSeries },
-  ] };
-
-  // ---- Property composition donut (by type) ----
-  const byType = {}; props.forEach(p => byType[p.type] = (byType[p.type] || 0) + 1);
-  const compEntries = Object.keys(byType).map(k => ({ type: k, value: byType[k] })).sort((a, b) => b.value - a.value);
-  const top = compEntries.slice(0, 5);
-  const otherVal = compEntries.slice(5).reduce((s, e) => s + e.value, 0);
-  const compData = top.map((e, i) => ({ label: t(e.type), value: e.value, color: UI.CHART_COLORS[i % UI.CHART_COLORS.length] }));
-  if (otherVal) {
-    const existing = compData.find(d => d.label === t('t_other'));
-    if (existing) existing.value += otherVal; // avoid duplicate "Other" in legend
-    else compData.push({ label: t('t_other'), value: otherVal, color: '#9aa3b0' });
-  }
-  const compTotal = props.length || 1;
-  const legendRows = compData.map(d => `<div class="lr"><i style="background:${d.color}"></i>
-      <span class="lr-name">${UI.esc(d.label)}</span><span class="lr-val">${Math.round((d.value / compTotal) * 100)}%</span></div>`).join('');
-
-  // ---- Recent lists ----
-  const latestProps = props.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
-  const recentTx = receipts.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-  const reminders = DB.all('notifications').slice(0, 4);
-  const reminderIcon = { contract: ['file', 'ic-blue'], rent: ['warning', 'ic-red'], property: ['calendar', 'ic-green'], payment: ['coins', 'ic-teal'], request: ['inbox', 'ic-orange'] };
-  const emptyHint = `<div class="cell-sub" style="text-align:center;padding:26px 0">${t('no_data')}</div>`;
-
-  root.innerHTML = VC.pageHead(t('nav_dashboard'), DB.load().settings.company + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
-    + `<div class="stat-grid kpi-grid">${kpiHtml}</div>
-
-    <div class="grid-12" style="margin-bottom:20px">
-      <div class="card"><div class="card-head"><h3>${t('sales_rental_stats')}</h3></div><div class="card-pad">${UI.line(trend)}</div></div>
-      <div class="card"><div class="card-head"><h3>${t('status_distribution')}</h3></div>
-        <div class="card-pad" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-          <div class="legend-rows" style="flex:1;min-width:150px">${legendRows}</div>
-          <div style="flex:0 0 160px">${UI.donut(compData, { center: props.length, centerLabel: t('properties'), hideLegend: true })}</div>
-        </div>
+  const statHtml = stats.map(s => `<div class="info-box" data-go="${s.go}">
+      <div class="ib-top">
+        <div class="ib-icon">${UI.icon(s.icon)}</div>
+        <div class="ib-numwrap"><div class="ib-label">${t('count')}</div><div class="ib-number mono">${UI.num(s.value)}</div></div>
       </div>
+      <div class="ib-title">${t(s.label)}</div>
+    </div>`).join('');
+
+  root.innerHTML = `
+    <div class="breadcrumb">${UI.icon('home')}<span>${t('nav_dashboard')}</span><span class="bc-sep">›</span><span>${t('nav_dashboard')}</span></div>
+    <div class="page-head">
+      <div><h1>${t('nav_dashboard')}</h1><p>${t('welcome')}, ${UI.esc(App.currentUser().name)}</p></div>
     </div>
-
-    <div style="margin-bottom:20px">
-      <div class="nav-group-label" style="color:var(--text-muted);padding:0 2px 10px">${t('quick_actions')}</div>
-      <div class="quick-actions">${qaHtml}</div>
-    </div>
-
-    <div class="grid-3">
-      <div class="card"><div class="card-head"><h3>${t('latest_properties')}</h3><span class="card-link" data-go="properties">${t('view_all')} →</span></div>
-        <div class="card-pad" style="display:flex;flex-direction:column;gap:14px">
-          ${latestProps.length ? latestProps.map(p => `<div style="display:flex;gap:12px;align-items:center">
-            <div class="g-thumb" style="width:56px;height:44px;flex:0 0 56px;border-radius:9px;${p.gallery && p.gallery[0] ? `background-image:url('${p.gallery[0]}')` : ''}"></div>
-            <div style="flex:1;min-width:0"><div class="cell-main">${t(p.type)} · ${t(p.purpose)}</div>
-              <div class="cell-sub">${UI.icon('pin')} ${UI.esc(p.district)} · ${p.area} m² · ${p.id}</div></div>
-            <div class="mono" style="font-weight:700;white-space:nowrap">${UI.money(p.purpose === 'sale' ? p.salePrice : p.rent)}</div>
-          </div>`).join('') : emptyHint}
-        </div>
-      </div>
-
-      <div class="card"><div class="card-head"><h3>${t('recent_transactions')}</h3><span class="card-link" data-go="receipts">${t('view_all')} →</span></div>
-        <div class="card-pad" style="display:flex;flex-direction:column;gap:2px">
-          ${recentTx.length ? recentTx.map(r => `<div class="kv"><span class="k">${UI.esc(r.forItem)}<div class="cell-sub">${UI.fdate(r.date)}</div></span>
-            <span class="v mono" style="color:var(--success)">+ ${UI.money(r.amount)}</span></div>`).join('') : emptyHint}
-        </div>
-      </div>
-
-      <div class="card"><div class="card-head"><h3>${t('reminders')}</h3><span class="card-link" data-go="settings">${t('view_all')} →</span></div>
-        <div class="card-pad">
-          ${reminders.length ? reminders.map(n => { const ic = reminderIcon[n.type] || ['bell', 'ic-gold']; return `<div class="reminder-row">
-            <div class="r-ic ${ic[1]}">${UI.icon(ic[0])}</div>
-            <div class="r-body"><div class="r-title">${UI.esc(n.title)}</div><div class="r-time">${UI.fdate(n.time)}</div></div></div>`; }).join('') : emptyHint}
-        </div>
-      </div>
-    </div>`;
+    <div class="link-cards">${shortcutHtml}</div>
+    <div class="info-boxes">${statHtml}</div>`;
 
   root.querySelectorAll('[data-go]').forEach(el => el.addEventListener('click', () => App.navigate(el.getAttribute('data-go'))));
 };
