@@ -28,7 +28,7 @@
       ${UI.field(t('purpose'), 'purpose', rec.purpose, { type: 'select', options: [{ value: 'sale', label: t('sale') }, { value: 'rent', label: t('rent') }], required: true })}
       <div class="form-grid">
         ${UI.field(t('city'), 'city', rec.city, { type: 'select', options: UI.CITIES(), required: true })}
-        ${UI.field(t('area') + ' (district)', 'district', rec.district, { type: 'select', options: UI.AREAS() })}
+        ${UI.field(t('area') + ' (district)', 'district', rec.district, { placeholder: t('cf_select') })}
         ${UI.field(t('area') + ' (m²)', 'area', rec.area, { type: 'number', required: true })}
         ${UI.field(t('bedrooms'), 'bedrooms', rec.bedrooms, { type: 'number' })}
         ${UI.field(t('bathrooms'), 'bathrooms', rec.bathrooms, { type: 'number' })}
