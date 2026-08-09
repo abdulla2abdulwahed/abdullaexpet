@@ -50,33 +50,62 @@
       { value: '5y', label: '5 ' + (I18N.current() === 'en' ? 'years' : t('duration')) },
     ];
     const kind = c.kind || kindDefault || 'sales';
+    const isEdit = !!c.id;
+    const statusSel = select('status', c.status || 'draft', [
+      { value: 'draft', label: t('draft') }, { value: 'active', label: t('active') },
+      { value: 'signed', label: t('signed') }, { value: 'expired', label: t('expired') }]);
 
-    // paired rows: [primary(right), secondary(left)]
-    const grid = [
-      row('cf_first_party', input('partyA', c.partyA)),
-      row('cf_second_party', input('partyB', c.partyB)),
-      row('cf_mobile', input('firstMobile', c.firstMobile)),
-      row('cf_mobile', input('secondMobile', c.secondMobile)),
-      row('cf_property_type', select('propertyType', c.propertyType, UI.PTYPE_OPTIONS())),
-      row('cf_area', input('area', c.area)),
-      row('cf_property_no', select('property', c.property, propOpts)),
-      row('cf_location', input('location', c.location)),
-      row('cf_currency', select('currency', cur, ['USD', 'IQD', 'EUR'])),
-      row('cf_advance', input('advance', c.advance || c.deposit, 'number')),
-      row('cf_price', input('amount', c.amount, 'number')),
-      row('cf_late_penalty', input('latePenalty', c.latePenalty, 'number')),
-      row('cf_remaining', input('remaining', c.remaining, 'number')),
-      row('cf_lawyer', input('lawyer', c.lawyer)),
-      row('cf_guarantor', input('guarantor', c.guarantor)),
-      row('cf_handover', input('handoverDate', c.handoverDate, 'date')),
-      row('cf_payment_due', input('paymentDue', c.paymentDue, 'date')),
-      row('cf_duration', select('duration', c.duration, durOpts)),
-      row('status', select('status', c.status || 'draft', [
-        { value: 'draft', label: t('draft') }, { value: 'active', label: t('active') },
-        { value: 'signed', label: t('signed') }, { value: 'expired', label: t('expired') }])),
-      row('agent', select('agent', c.agent, UI.AGENT_OPTIONS())),
-      row('cf_notes', textarea('notes', c.notes), true),
-    ].join('');
+    // Field set differs by contract type (sales vs rental/commercial lease).
+    let rows;
+    if (kind === 'sales') {
+      rows = [
+        row('cf_first_party', input('partyA', c.partyA)),
+        row('cf_second_party', input('partyB', c.partyB)),
+        row('cf_mobile', input('firstMobile', c.firstMobile)),
+        row('cf_mobile', input('secondMobile', c.secondMobile)),
+        row('cf_property_type', select('propertyType', c.propertyType, UI.PTYPE_OPTIONS())),
+        row('cf_area', input('area', c.area)),
+        row('cf_property_no', select('property', c.property, propOpts)),
+        row('cf_location', input('location', c.location)),
+        row('cf_currency', select('currency', cur, ['USD', 'IQD', 'EUR'])),
+        row('cf_advance', input('advance', c.advance || c.deposit, 'number')),
+        row('cf_price', input('amount', c.amount, 'number')),
+        row('cf_late_penalty', input('latePenalty', c.latePenalty, 'number')),
+        row('cf_remaining', input('remaining', c.remaining, 'number')),
+        row('cf_lawyer', input('lawyer', c.lawyer)),
+        row('cf_guarantor', input('guarantor', c.guarantor)),
+        row('cf_handover', input('handoverDate', c.handoverDate, 'date')),
+        row('cf_payment_due', input('paymentDue', c.paymentDue, 'date')),
+        row('cf_duration', select('duration', c.duration, durOpts)),
+        row('status', statusSel),
+        row('agent', select('agent', c.agent, UI.AGENT_OPTIONS())),
+      ];
+    } else {
+      // Rental / commercial lease
+      rows = [
+        row('cf_landlord', input('partyA', c.partyA)),
+        row('cf_tenant', input('partyB', c.partyB)),
+        row('cf_mobile', input('firstMobile', c.firstMobile)),
+        row('cf_mobile', input('secondMobile', c.secondMobile)),
+        row('cf_property_type', select('propertyType', c.propertyType, UI.PTYPE_OPTIONS())),
+        row('cf_area', input('area', c.area)),
+        row('cf_property_no', select('property', c.property, propOpts)),
+        row('cf_location', input('location', c.location)),
+        row('cf_lease_start', input('startDate', c.startDate, 'date')),
+        row('cf_lease_duration', select('duration', c.duration, durOpts)),
+        row('cf_rent', input('amount', c.amount, 'number')),
+        row('cf_late_penalty', input('latePenalty', c.latePenalty, 'number')),
+        row('cf_advance_rent', input('advanceRent', c.advanceRent, 'number')),
+        row('cf_daily_penalty', input('dailyPenalty', c.dailyPenalty, 'number')),
+        row('cf_deposit', input('deposit', c.deposit, 'number')),
+        row('cf_handover', input('handoverDate', c.handoverDate, 'date')),
+        row('cf_currency', select('currency', cur, ['USD', 'IQD', 'EUR'])),
+        row('cf_guarantor', input('guarantor', c.guarantor)),
+        row('status', statusSel),
+        row('agent', select('agent', c.agent, UI.AGENT_OPTIONS())),
+      ];
+    }
+    const grid = rows.concat([row('cf_notes', textarea('notes', c.notes), true)]).join('');
 
     root.innerHTML = `<div class="contract-form">
       <div class="cf-back" data-back>${UI.icon('chevron')} ${t('cf_back')}</div>
@@ -84,39 +113,46 @@
         <div style="text-align:end;margin-bottom:6px">${select('kind', kind, [
           { value: 'sales', label: t('sales_contracts') }, { value: 'rental', label: t('rental_contracts') }, { value: 'commercial', label: t('commercial_contracts') }])
           .replace('class="select"', 'class="select" style="max-width:220px;display:inline-block"')}</div>
-        <div class="cf-title">${existing ? existing.id + ' — ' : ''}${t(kind + '_contracts')}</div>
+        <div class="cf-title">${isEdit ? c.id + ' — ' : ''}${t(kind + '_contracts')}</div>
         <form id="cform"><div class="cf-grid">${grid}</div></form>
         <div class="cf-actions">
           <button class="btn btn-royal" data-save>${UI.icon('check')}${t('cf_save')}</button>
           <button class="btn" data-new>${UI.icon('file')}${t('cf_new')}</button>
           <button class="btn btn-royal" data-receive>${UI.icon('coins')}${t('cf_receive')}</button>
-          ${existing ? `<button class="btn" data-print>${UI.icon('printer')}${t('print')} PDF</button>` : ''}
+          ${isEdit ? `<button class="btn" data-print>${UI.icon('printer')}${t('print')} PDF</button>` : ''}
         </div>
       </div></div>`;
 
     function collect() {
       const fd = UI.formData(root);
-      const price = +fd.amount || 0, advance = +fd.advance || 0;
+      const price = +fd.amount || 0;
+      const dep = (fd.deposit != null && fd.deposit !== '') ? +fd.deposit : (+fd.advance || 0);
       return {
         ...c, kind: fd.kind || kind,
         partyA: fd.partyA, partyB: fd.partyB, firstMobile: fd.firstMobile, secondMobile: fd.secondMobile,
         propertyType: fd.propertyType, property: fd.property, area: fd.area, location: fd.location,
-        currency: fd.currency, amount: price, price: price, advance: advance, deposit: advance,
-        remaining: +fd.remaining || 0, latePenalty: +fd.latePenalty || 0, commission: c.commission || Math.round(price * 0.02),
+        currency: fd.currency, amount: price, price: price,
+        advance: +fd.advance || 0, advanceRent: +fd.advanceRent || 0, deposit: dep,
+        remaining: +fd.remaining || 0, latePenalty: +fd.latePenalty || 0, dailyPenalty: +fd.dailyPenalty || 0,
+        commission: c.commission || Math.round(price * (fd.kind === 'sales' || kind === 'sales' ? 0.02 : 1)),
         lawyer: fd.lawyer, guarantor: fd.guarantor, handoverDate: fd.handoverDate || null,
         paymentDue: fd.paymentDue || null, duration: fd.duration, status: fd.status, agent: fd.agent,
-        notes: fd.notes, startDate: c.startDate || DB.daysFromNow(0), endDate: c.endDate || null,
+        notes: fd.notes, startDate: fd.startDate || c.startDate || DB.daysFromNow(0), endDate: c.endDate || null,
         signed: fd.status === 'signed' || fd.status === 'active',
       };
     }
 
     root.querySelector('[data-back]').addEventListener('click', back);
+    // switching contract type re-renders with that type's field set (keeps entered values)
+    root.querySelector('[name="kind"]').addEventListener('change', e => {
+      const rec = collect(); rec.kind = e.target.value; contractForm(root, rec, e.target.value, back);
+    });
     root.querySelector('[data-save]').addEventListener('click', () => {
       const form = root.querySelector('#cform');
       if (!form.reportValidity()) return;
       const rec = collect();
       if (!rec.partyA || !rec.partyB) { UI.toast(t('cf_first_party') + ' / ' + t('cf_second_party'), 'err'); return; }
-      DB.upsert('contracts', rec); UI.toast(t('saved')); App.bumpAudit(existing ? 'updated a contract' : 'created a contract'); back();
+      DB.upsert('contracts', rec); UI.toast(t('saved')); App.bumpAudit(isEdit ? 'updated a contract' : 'created a contract'); back();
     });
     root.querySelector('[data-new]').addEventListener('click', () => contractForm(root, null, kind, back));
     root.querySelector('[data-receive]').addEventListener('click', () => {
