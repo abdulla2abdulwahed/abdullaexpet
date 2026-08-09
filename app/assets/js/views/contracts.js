@@ -55,9 +55,9 @@
       { value: 'draft', label: t('draft') }, { value: 'active', label: t('active') },
       { value: 'signed', label: t('signed') }, { value: 'expired', label: t('expired') }]);
 
-    // Field set differs by contract type (sales vs rental/commercial lease).
+    // Field set by contract type: sales & commercial share the sale layout, rental uses the lease layout.
     let rows;
-    if (kind === 'sales') {
+    if (kind === 'sales' || kind === 'commercial') {
       rows = [
         row('cf_first_party', input('partyA', c.partyA)),
         row('cf_second_party', input('partyB', c.partyB)),
@@ -134,7 +134,7 @@
         currency: fd.currency, amount: price, price: price,
         advance: +fd.advance || 0, advanceRent: +fd.advanceRent || 0, deposit: dep,
         remaining: +fd.remaining || 0, latePenalty: +fd.latePenalty || 0, dailyPenalty: +fd.dailyPenalty || 0,
-        commission: c.commission || Math.round(price * (fd.kind === 'sales' || kind === 'sales' ? 0.02 : 1)),
+        commission: c.commission || Math.round(price * ((fd.kind || kind) === 'rental' ? 1 : 0.02)),
         lawyer: fd.lawyer, guarantor: fd.guarantor, handoverDate: fd.handoverDate || null,
         paymentDue: fd.paymentDue || null, duration: fd.duration, status: fd.status, agent: fd.agent,
         notes: fd.notes, startDate: fd.startDate || c.startDate || DB.daysFromNow(0), endDate: c.endDate || null,
