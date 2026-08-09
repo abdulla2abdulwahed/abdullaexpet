@@ -49,6 +49,7 @@ window.UI = (function () {
     clock: `<circle cx="12" cy="12" r="9" ${P}/><path d="M12 7v5l3 2" ${P}/>`,
     grid: `<rect x="3" y="3" width="7" height="7" ${P}/><rect x="14" y="3" width="7" height="7" ${P}/><rect x="14" y="14" width="7" height="7" ${P}/><rect x="3" y="14" width="7" height="7" ${P}/>`,
     chevron: `<polyline points="6 9 12 15 18 9" ${P}/>`,
+    info: `<circle cx="12" cy="12" r="9" ${P}/><path d="M12 16v-5M12 8h.01" ${P}/>`,
     home: `<path d="M3 10.5 12 3l9 7.5" ${P}/><path d="M5 9.5V21h14V9.5" ${P}/><path d="M9.5 21v-6h5v6" ${P}/>`,
   };
   function icon(name, cls) { return `<svg viewBox="0 0 24 24" ${cls ? 'class="' + cls + '"' : ''} aria-hidden="true">${ICONS[name] || ''}</svg>`; }
