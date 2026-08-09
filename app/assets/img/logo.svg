@@ -1,0 +1,8 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tablo Real Estate">
+  <rect width="120" height="120" rx="24" fill="#0c0d10"/>
+  <rect x="74" y="16" width="13" height="42" rx="2" fill="#d5a93b"/>
+  <path d="M10 60 L58 18 L110 60 Z" fill="#7f7395"/>
+  <path d="M31 57 H89 V90 a8 8 0 0 1 -8 8 H39 a8 8 0 0 1 -8 -8 Z" fill="#d5a93b"/>
+  <rect x="33" y="57" width="56" height="12.5" fill="#0c0d10"/>
+  <rect x="51.5" y="57" width="17" height="41" fill="#0c0d10"/>
+</svg>
