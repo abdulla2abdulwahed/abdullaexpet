@@ -348,7 +348,9 @@ textarea.input { resize: vertical; min-height: 84px; }
 .cf-actions .btn { min-width: 130px; }
 .btn-royal { background: var(--royal); border-color: var(--royal); color: #fff; }
 .btn-royal:hover { background: var(--royal-dark); border-color: var(--royal-dark); color: #fff; }
-.cf-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; margin-bottom: 14px; }
+.cf-back { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--text-muted); font-size: 13px; cursor: pointer; margin-bottom: 14px; }
+.cf-back svg { width: 16px; height: 16px; transform: rotate(90deg); }
+[dir="rtl"] .cf-back svg { transform: rotate(-90deg); }
 .cf-back:hover { color: var(--gold-dark); }
 
 /* quick actions */
